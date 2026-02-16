@@ -1,6 +1,6 @@
-# Personal Finance Application
+# Nexus
 
-A full-stack personal finance management application built with FastAPI backend and Next.js frontend.
+A full-stack personal finance application (Nexus) built with FastAPI backend and Next.js frontend.
 
 ## Features
 
@@ -114,7 +114,7 @@ docker compose up -d --build
 ## Project Structure
 
 ```
-personal-finance-app/
+nexus/  # rename repo/folder from personal-finance-app to nexus if desired
 ├── backend/
 │   ├── app/
 │   │   ├── api/v1/        # API endpoints
@@ -177,6 +177,8 @@ personal-finance-app/
 - `GET /api/v1/reports/income-vs-expenses` - Income vs expenses
 
 ## Development
+
+Phased development is tracked in [docs/PHASES.md](docs/PHASES.md) and via [GitHub issues](https://github.com/massoudsh/personal-finance-app/issues). Phase 1 (Foundation) is in progress.
 
 ### Running Tests
 ```bash

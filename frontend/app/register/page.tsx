@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { apiClient } from '@/lib/api'
 
@@ -41,10 +42,16 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-md">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Create your account
+      <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-xl shadow-lg border border-gray-100">
+        <div className="flex flex-col items-center gap-3">
+          <Link href="/" className="flex items-center gap-2">
+            <div className="h-10 w-10 rounded-lg bg-primary-600 text-white flex items-center justify-center font-bold text-sm">
+              NX
+            </div>
+            <span className="font-semibold text-gray-900">Nexus</span>
+          </Link>
+          <h2 className="text-center text-2xl font-bold text-gray-900">
+            Create your Nexus account
           </h2>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -123,9 +130,9 @@ export default function RegisterPage() {
           </div>
 
           <div className="text-center">
-            <a href="/login" className="text-sm text-primary-600 hover:text-primary-500">
+            <Link href="/login" className="text-sm text-primary-600 hover:text-primary-500">
               Already have an account? Sign in
-            </a>
+            </Link>
           </div>
         </form>
       </div>

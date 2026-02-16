@@ -41,7 +41,7 @@ def on_startup() -> None:
 async def root():
     """Root endpoint."""
     return {
-        "message": "Personal Finance API",
+        "message": "Nexus API",
         "version": settings.APP_VERSION,
         "docs": "/docs"
     }
