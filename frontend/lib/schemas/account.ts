@@ -23,4 +23,25 @@ export type Account = z.infer<typeof AccountSchema>
 export const AccountsSchema = z.array(AccountSchema)
 export type Accounts = z.infer<typeof AccountsSchema>
 
+const accountTypeEnum = z.enum(['checking', 'savings', 'credit_card', 'investment', 'loan', 'other'])
+
+export const AccountCreateSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(100),
+  account_type: accountTypeEnum,
+  balance: z.number().default(0),
+  currency: z.string().length(3).default('USD'),
+  description: z.string().max(500).optional().nullable(),
+})
+export type AccountCreate = z.infer<typeof AccountCreateSchema>
+
+export const AccountUpdateSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  account_type: accountTypeEnum.optional(),
+  balance: z.number().optional(),
+  currency: z.string().length(3).optional(),
+  description: z.string().max(500).optional().nullable(),
+  is_active: z.boolean().optional(),
+})
+export type AccountUpdate = z.infer<typeof AccountUpdateSchema>
+
 
