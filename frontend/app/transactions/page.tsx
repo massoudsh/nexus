@@ -5,6 +5,8 @@ import { apiClient } from '@/lib/api'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import Navbar from '@/components/layout/Navbar'
 import TransactionForm from '@/components/forms/TransactionForm'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import type { Account } from '@/lib/schemas/account'
 import type { Transaction } from '@/lib/schemas/transaction'
 import type { CategoryOption } from '@/components/forms/TransactionForm'
@@ -22,6 +24,7 @@ export default function TransactionsPage() {
   const [importing, setImporting] = useState(false)
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null)
   const [deletingId, setDeletingId] = useState<number | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState<Transaction | null>(null)
 
   const loadTransactions = useCallback(async () => {
     try {
@@ -93,11 +96,13 @@ export default function TransactionsPage() {
     setImportResult(null)
   }
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('Delete this transaction? This cannot be undone.')) return
-    setDeletingId(id)
+  const handleDeleteClick = (transaction: Transaction) => setConfirmDelete(transaction)
+  const handleDeleteConfirm = async () => {
+    if (!confirmDelete) return
+    setDeletingId(confirmDelete.id)
+    setConfirmDelete(null)
     try {
-      await apiClient.deleteTransaction(id)
+      await apiClient.deleteTransaction(confirmDelete.id)
       await loadTransactions()
     } catch (error) {
       console.error('Failed to delete transaction:', error)
@@ -133,9 +138,14 @@ export default function TransactionsPage() {
           </div>
 
           {loading ? (
-            <div className="text-center py-12">Loading...</div>
+            <div className="text-center py-12 text-gray-500 dark:text-gray-400">Loading...</div>
           ) : transactions.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">No transactions found. Add your first transaction!</div>
+            <EmptyState
+              title="No transactions yet"
+              description="Add a transaction, import from CSV, or paste a bank SMS in Banking to get started."
+              actionLabel="Add transaction"
+              onAction={openCreate}
+            />
           ) : (
             <div className="bg-white shadow overflow-hidden sm:rounded-md">
               <ul className="divide-y divide-gray-200">
@@ -166,7 +176,7 @@ export default function TransactionsPage() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => handleDelete(transaction.id)}
+                          onClick={() => handleDeleteClick(transaction)}
                           disabled={deletingId === transaction.id}
                           className="text-sm text-red-600 hover:text-red-700 font-medium disabled:opacity-50"
                         >
@@ -182,6 +192,14 @@ export default function TransactionsPage() {
         </div>
       </main>
 
+      <ConfirmDialog
+        open={!!confirmDelete}
+        title="Delete transaction?"
+        message={confirmDelete ? 'This transaction will be removed. Account balance will be updated. This cannot be undone.' : ''}
+        confirmLabel="Delete"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setConfirmDelete(null)}
+      />
       {formOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" aria-modal="true" role="dialog">
           <div className="bg-white rounded-xl shadow-lg max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">

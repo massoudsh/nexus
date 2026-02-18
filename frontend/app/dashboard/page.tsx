@@ -10,6 +10,7 @@ import Navbar from '@/components/layout/Navbar'
 import ExpenseChart from '@/components/charts/ExpenseChart'
 import IncomeExpenseBar from '@/components/charts/IncomeExpenseBar'
 import { BudgetAlerts } from '@/components/dashboard/BudgetAlerts'
+import { DashboardSkeleton } from '@/components/ui/Skeleton'
 import type { DashboardSummary } from '@/lib/schemas/dashboard'
 import type { Accounts } from '@/lib/schemas/account'
 import type { ExpensesByCategory, IncomeVsExpenses } from '@/lib/schemas/reports'
@@ -78,23 +79,11 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 dark:bg-gray-900">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Navbar />
-        <div className="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
-          <div className="animate-pulse space-y-6">
-            <div className="h-8 w-48 bg-gray-200 dark:bg-gray-700 rounded" />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="h-28 bg-white dark:bg-gray-800 rounded-lg shadow" />
-              <div className="h-28 bg-white dark:bg-gray-800 rounded-lg shadow" />
-              <div className="h-28 bg-white dark:bg-gray-800 rounded-lg shadow" />
-              <div className="h-28 bg-white dark:bg-gray-800 rounded-lg shadow" />
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <div className="h-80 bg-white dark:bg-gray-800 rounded-lg shadow lg:col-span-2" />
-              <div className="h-80 bg-white dark:bg-gray-800 rounded-lg shadow" />
-            </div>
-          </div>
-        </div>
+        <main id="main-content" className="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+          <DashboardSkeleton />
+        </main>
       </div>
     )
   }
@@ -128,7 +117,7 @@ export default function DashboardPage() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 dark:bg-gray-900">
         <Navbar />
 
-        <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <main id="main-content" className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
           <div className="px-4 py-6 sm:px-0">
             <div className="mb-6 rounded-xl border border-yellow-200 dark:border-yellow-700 bg-yellow-50 dark:bg-yellow-900/20 px-4 py-3 text-yellow-900 dark:text-yellow-200">
               You’re in <span className="font-semibold">Guest Mode</span>. Create an account to connect your real accounts and track
@@ -240,7 +229,7 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 dark:bg-gray-900">
       <Navbar />
 
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <main id="main-content" className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           {paymentBanner && (
             <div
@@ -294,6 +283,13 @@ export default function DashboardPage() {
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Last refresh: {format(new Date(), 'PPpp')}</p>
             </div>
             <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="px-4 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 print:hidden"
+              >
+                Print / PDF
+              </button>
               <Link href="/transactions" className="px-4 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
                 Add transaction
               </Link>

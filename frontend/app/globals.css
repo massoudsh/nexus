@@ -8,3 +8,9 @@
   }
 }
 
+@media print {
+  nav, .print\\:hidden, button.print\\:hidden, [role="navigation"] { display: none !important; }
+  body { background: white; color: black; }
+  .dark { color: black; background: white; }
+}
+

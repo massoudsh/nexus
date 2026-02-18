@@ -5,6 +5,8 @@ import { apiClient } from '@/lib/api'
 import { formatCurrency } from '@/lib/utils'
 import Navbar from '@/components/layout/Navbar'
 import AccountForm from '@/components/forms/AccountForm'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import type { Account } from '@/lib/schemas/account'
 
 export default function AccountsPage() {
@@ -13,6 +15,7 @@ export default function AccountsPage() {
   const [formOpen, setFormOpen] = useState(false)
   const [editingAccount, setEditingAccount] = useState<Account | null>(null)
   const [deletingId, setDeletingId] = useState<number | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState<Account | null>(null)
 
   const loadAccounts = useCallback(async () => {
     try {
@@ -42,11 +45,13 @@ export default function AccountsPage() {
     setEditingAccount(null)
   }
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('Delete this account? This cannot be undone.')) return
-    setDeletingId(id)
+  const handleDeleteClick = (account: Account) => setConfirmDelete(account)
+  const handleDeleteConfirm = async () => {
+    if (!confirmDelete) return
+    setDeletingId(confirmDelete.id)
+    setConfirmDelete(null)
     try {
-      await apiClient.deleteAccount(id)
+      await apiClient.deleteAccount(confirmDelete.id)
       await loadAccounts()
     } catch (error) {
       console.error('Failed to delete account:', error)
@@ -73,9 +78,14 @@ export default function AccountsPage() {
           </div>
 
           {loading ? (
-            <div className="text-center py-12">Loading...</div>
+            <div className="text-center py-12 text-gray-500 dark:text-gray-400">Loading...</div>
           ) : accounts.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">No accounts found. Create your first account!</div>
+            <EmptyState
+              title="No accounts yet"
+              description="Add your first account to start tracking balances and transactions."
+              actionLabel="Add account"
+              onAction={openCreate}
+            />
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {accounts.map((account) => (
@@ -99,7 +109,7 @@ export default function AccountsPage() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleDelete(account.id)}
+                        onClick={() => handleDeleteClick(account)}
                         disabled={deletingId === account.id}
                         className="text-sm text-red-600 hover:text-red-700 font-medium disabled:opacity-50"
                       >
@@ -114,6 +124,14 @@ export default function AccountsPage() {
         </div>
       </main>
 
+      <ConfirmDialog
+        open={!!confirmDelete}
+        title="Delete account?"
+        message={confirmDelete ? `"${confirmDelete.name}" and its transaction history will be affected. This cannot be undone.` : ''}
+        confirmLabel="Delete"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setConfirmDelete(null)}
+      />
       {formOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" aria-modal="true" role="dialog">
           <div className="bg-white rounded-xl shadow-lg max-w-md w-full p-6">

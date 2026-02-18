@@ -280,6 +280,45 @@ class ApiClient {
     return response.data;
   }
 
+  // Recurring transactions
+  async getRecurring(limit?: number) {
+    const response = await this.client.get('/recurring', { params: { limit } });
+    return response.data as Array<{
+      id: number;
+      account_id: number;
+      category_id: number | null;
+      amount: number;
+      transaction_type: string;
+      description: string | null;
+      frequency: string;
+      next_run_date: string;
+      is_active: number;
+      created_at: string | null;
+    }>;
+  }
+
+  async createRecurring(data: {
+    account_id: number;
+    category_id?: number;
+    amount: number;
+    transaction_type: 'income' | 'expense';
+    description?: string;
+    frequency: 'weekly' | 'monthly' | 'yearly';
+    next_run_date: string;
+  }) {
+    const response = await this.client.post('/recurring', data);
+    return response.data;
+  }
+
+  async updateRecurring(id: number, data: Partial<{ account_id: number; category_id: number; amount: number; transaction_type: string; description: string; frequency: string; next_run_date: string; is_active: number }>) {
+    const response = await this.client.patch(`/recurring/${id}`, data);
+    return response.data;
+  }
+
+  async deleteRecurring(id: number) {
+    await this.client.delete(`/recurring/${id}`);
+  }
+
   // Budget endpoints
   async getBudgets() {
     const response = await this.client.get('/budgets');

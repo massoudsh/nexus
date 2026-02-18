@@ -20,7 +20,9 @@ export default function Navbar() {
       { href: '/budgets', label: 'Budgets' },
       { href: '/goals', label: 'Goals' },
       { href: '/banking-messages', label: 'Banking' },
+      { href: '/connect-bank', label: 'Link bank' },
       { href: '/payments', label: 'Payments' },
+      { href: '/recurring', label: 'Recurring' },
       { href: '/junior', label: 'Junior Savings' },
     ],
     []

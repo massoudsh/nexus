@@ -6,10 +6,12 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import Navbar from '@/components/layout/Navbar'
 import { useTheme, type Theme } from '@/contexts/ThemeContext'
+import { useToast } from '@/contexts/ToastContext'
 
 export default function SettingsPage() {
   const router = useRouter()
   const { theme, setTheme } = useTheme()
+  const { addToast } = useToast()
   const [user, setUser] = useState<{ email?: string; username?: string; full_name?: string | null } | null>(null)
   const [loading, setLoading] = useState(true)
   const [isGuest, setIsGuest] = useState(false)
@@ -58,6 +60,7 @@ export default function SettingsPage() {
       setUser(updated)
       setEditing(false)
       setMessage({ type: 'success', text: 'Profile updated.' })
+      addToast('success', 'Profile updated.')
     } catch (err) {
       setMessage({ type: 'error', text: getApiErrorMessage(err) })
     } finally {

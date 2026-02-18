@@ -29,6 +29,7 @@ class User(Base):
     junior_profiles = relationship("JuniorProfile", back_populates="parent", cascade="all, delete-orphan")
     banking_messages = relationship("BankingMessage", back_populates="user", cascade="all, delete-orphan")
     payments = relationship("Payment", back_populates="user", cascade="all, delete-orphan")
+    recurring_transactions = relationship("RecurringTransaction", back_populates="user", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<User(id={self.id}, email={self.email}, username={self.username})>"

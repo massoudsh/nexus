@@ -5,6 +5,8 @@ import { apiClient } from '@/lib/api'
 import { formatCurrency } from '@/lib/utils'
 import Navbar from '@/components/layout/Navbar'
 import GoalForm from '@/components/forms/GoalForm'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import type { Goal } from '@/lib/schemas/goal'
 
 export default function GoalsPage() {
@@ -13,6 +15,7 @@ export default function GoalsPage() {
   const [formOpen, setFormOpen] = useState(false)
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null)
   const [deletingId, setDeletingId] = useState<number | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState<Goal | null>(null)
 
   const loadGoals = useCallback(async () => {
     try {
@@ -42,11 +45,13 @@ export default function GoalsPage() {
     setEditingGoal(null)
   }
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('Delete this goal? This cannot be undone.')) return
-    setDeletingId(id)
+  const handleDeleteClick = (goal: Goal) => setConfirmDelete(goal)
+  const handleDeleteConfirm = async () => {
+    if (!confirmDelete) return
+    setDeletingId(confirmDelete.id)
+    setConfirmDelete(null)
     try {
-      await apiClient.deleteGoal(id)
+      await apiClient.deleteGoal(confirmDelete.id)
       await loadGoals()
     } catch (error) {
       console.error('Failed to delete goal:', error)
@@ -73,9 +78,14 @@ export default function GoalsPage() {
           </div>
 
           {loading ? (
-            <div className="text-center py-12">Loading...</div>
+            <div className="text-center py-12 text-gray-500 dark:text-gray-400">Loading...</div>
           ) : goals.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">No goals found. Create your first goal!</div>
+            <EmptyState
+              title="No goals yet"
+              description="Set a savings goal and track your progress over time."
+              actionLabel="Create goal"
+              onAction={openCreate}
+            />
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {goals.map((goal) => {
@@ -107,7 +117,7 @@ export default function GoalsPage() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => handleDelete(goal.id)}
+                          onClick={() => handleDeleteClick(goal)}
                           disabled={deletingId === goal.id}
                           className="text-sm text-red-600 hover:text-red-700 font-medium disabled:opacity-50"
                         >
@@ -136,6 +146,14 @@ export default function GoalsPage() {
         </div>
       </main>
 
+      <ConfirmDialog
+        open={!!confirmDelete}
+        title="Delete goal?"
+        message={confirmDelete ? `"${confirmDelete.name}" will be removed. This cannot be undone.` : ''}
+        confirmLabel="Delete"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setConfirmDelete(null)}
+      />
       {formOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" aria-modal="true" role="dialog">
           <div className="bg-white rounded-xl shadow-lg max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">

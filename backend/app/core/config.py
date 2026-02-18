@@ -45,6 +45,14 @@ class Settings(BaseSettings):
     ZARINPAL_CALLBACK_BASE_URL: Optional[str] = None  # e.g. https://api.example.com (backend base for callback URL)
     FRONTEND_URL: Optional[str] = None  # e.g. https://app.example.com (redirect after payment; default localhost:3000)
 
+    # Email (password reset): optional SMTP
+    SMTP_HOST: Optional[str] = None
+    SMTP_PORT: int = 587
+    SMTP_USER: Optional[str] = None
+    SMTP_PASSWORD: Optional[str] = None
+    SMTP_FROM: Optional[str] = None  # e.g. noreply@yourapp.com
+    EMAIL_ENABLED: bool = False  # set True when SMTP_* are set
+
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
     def parse_cors_origins(cls, v: Union[str, list]) -> list[str]:

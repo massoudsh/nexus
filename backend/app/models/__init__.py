@@ -10,10 +10,11 @@ from app.models.category import Category
 from app.models.junior import JuniorProfile, JuniorGoal, AutomatedDeposit, Reward
 from app.models.banking_message import BankingMessage
 from app.models.payment import Payment
+from app.models.recurring import RecurringTransaction
 
 __all__ = [
     "User", "Account", "Transaction", "Budget", "Goal", "Category",
     "JuniorProfile", "JuniorGoal", "AutomatedDeposit", "Reward",
-    "BankingMessage", "Payment",
+    "BankingMessage", "Payment", "RecurringTransaction",
 ]
 

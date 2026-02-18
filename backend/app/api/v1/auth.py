@@ -188,8 +188,8 @@ async def forgot_password(body: ForgotPasswordRequest, db: Session = Depends(get
         reset_token = create_reset_token(data={"sub": user.id})
         base = getattr(settings, "FRONTEND_URL", None) or "http://localhost:3000"
         reset_link = f"{base.rstrip('/')}/reset-password?token={reset_token}"
-        logger.info("Password reset link for %s (dev only, do not log in production): %s", body.email, reset_link)
-        # TODO: send email with reset_link in production
+        from app.core.email import send_password_reset_email
+        send_password_reset_email(user.email, reset_link)
     return ForgotPasswordResponse()
 
 
