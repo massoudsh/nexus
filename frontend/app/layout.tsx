@@ -20,7 +20,14 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){var t=localStorage.getItem('nexus-theme');var r=t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.add(r?'dark':'light');})();`,
+          }}
+        />
+      </head>
       <body>
         <ErrorBoundary>
           <ClientProviders>{children}</ClientProviders>

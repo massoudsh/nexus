@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 import Button from '@/components/ui/Button'
+import { ThemeToggle } from '@/components/ThemeToggle'
 
 export default function Navbar() {
   const pathname = usePathname()
@@ -42,7 +43,7 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="bg-white/80 backdrop-blur border-b border-gray-200 sticky top-0 z-40">
+    <nav className="bg-white/80 dark:bg-gray-900/80 backdrop-blur border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           <div className="flex items-center gap-6">
@@ -50,9 +51,9 @@ export default function Navbar() {
               <div className="h-8 w-8 rounded-lg bg-primary-600 text-white flex items-center justify-center font-bold text-sm">
                 NX
               </div>
-              <div className="font-semibold text-gray-900">Nexus</div>
+              <div className="font-semibold text-gray-900 dark:text-white">Nexus</div>
               {!isAuthed && (
-                <span className="ml-1 text-xs font-medium bg-yellow-50 text-yellow-800 border border-yellow-200 px-2 py-0.5 rounded-full hidden sm:inline">
+                <span className="ml-1 text-xs font-medium bg-yellow-50 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 border border-yellow-200 dark:border-yellow-700 px-2 py-0.5 rounded-full hidden sm:inline">
                   Guest
                 </span>
               )}
@@ -67,7 +68,9 @@ export default function Navbar() {
                     href={item.href}
                     className={[
                       'px-3 py-2 rounded-md text-sm font-medium',
-                      active ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50',
+                      active
+                        ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+                        : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800',
                     ].join(' ')}
                   >
                     {item.label}
@@ -78,9 +81,10 @@ export default function Navbar() {
           </div>
 
           <div className="flex items-center gap-2">
+            <ThemeToggle />
             <button
               type="button"
-              className="sm:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="sm:hidden p-2 rounded-md text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
               aria-expanded={mobileMenuOpen}
               aria-label="Toggle menu"
               onClick={() => setMobileMenuOpen((o) => !o)}
@@ -100,7 +104,7 @@ export default function Navbar() {
             <div className="hidden sm:flex items-center gap-2">
               {isAuthed ? (
                 <>
-                  <Link href="/settings" className="text-sm text-gray-600 hover:text-gray-900">
+                  <Link href="/settings" className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
                     Settings
                   </Link>
                   <Button variant="secondary" onClick={handleLogout}>
@@ -109,7 +113,7 @@ export default function Navbar() {
                 </>
               ) : (
                 <>
-                  <Link href="/login" className="text-sm text-gray-600 hover:text-gray-900">
+                  <Link href="/login" className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
                     Sign in
                   </Link>
                   <Link href="/register">
@@ -122,7 +126,7 @@ export default function Navbar() {
         </div>
 
         {mobileMenuOpen && (
-          <div className="sm:hidden border-t border-gray-200 py-4">
+          <div className="sm:hidden border-t border-gray-200 dark:border-gray-700 py-4">
             <div className="flex flex-col gap-1">
               {navItems.map((item) => {
                 const active = pathname === item.href
@@ -132,33 +136,35 @@ export default function Navbar() {
                     href={item.href}
                     className={[
                       'px-3 py-2 rounded-md text-sm font-medium',
-                      active ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50',
+                      active
+                        ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+                        : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800',
                     ].join(' ')}
                   >
                     {item.label}
                   </Link>
                 )
               })}
-              <div className="mt-2 pt-2 border-t border-gray-100 flex flex-col gap-1">
+              <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-700 flex flex-col gap-1">
                 {isAuthed ? (
                   <>
-                    <Link href="/settings" className="px-3 py-2 rounded-md text-sm text-gray-600 hover:bg-gray-50">
+                    <Link href="/settings" className="px-3 py-2 rounded-md text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
                       Settings
                     </Link>
                     <button
                       type="button"
                       onClick={handleLogout}
-                      className="px-3 py-2 rounded-md text-sm font-medium text-left text-gray-700 hover:bg-gray-100"
+                      className="px-3 py-2 rounded-md text-sm font-medium text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                     >
                       Sign out
                     </button>
                   </>
                 ) : (
                   <>
-                    <Link href="/login" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
+                    <Link href="/login" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800">
                       Sign in
                     </Link>
-                    <Link href="/register" className="px-3 py-2 rounded-md text-sm font-medium bg-primary-600 text-white hover:bg-primary-700 text-center">
+                    <Link href="/register" className="px-3 py-2 rounded-md text-sm font-medium bg-primary-600 text-white hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 text-center">
                       Create account
                     </Link>
                   </>

@@ -59,20 +59,20 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 dark:bg-gray-900">
         <Navbar />
         <div className="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
           <div className="animate-pulse space-y-6">
-            <div className="h-8 w-48 bg-gray-200 rounded" />
+            <div className="h-8 w-48 bg-gray-200 dark:bg-gray-700 rounded" />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="h-28 bg-white rounded-lg shadow" />
-              <div className="h-28 bg-white rounded-lg shadow" />
-              <div className="h-28 bg-white rounded-lg shadow" />
-              <div className="h-28 bg-white rounded-lg shadow" />
+              <div className="h-28 bg-white dark:bg-gray-800 rounded-lg shadow" />
+              <div className="h-28 bg-white dark:bg-gray-800 rounded-lg shadow" />
+              <div className="h-28 bg-white dark:bg-gray-800 rounded-lg shadow" />
+              <div className="h-28 bg-white dark:bg-gray-800 rounded-lg shadow" />
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <div className="h-80 bg-white rounded-lg shadow lg:col-span-2" />
-              <div className="h-80 bg-white rounded-lg shadow" />
+              <div className="h-80 bg-white dark:bg-gray-800 rounded-lg shadow lg:col-span-2" />
+              <div className="h-80 bg-white dark:bg-gray-800 rounded-lg shadow" />
             </div>
           </div>
         </div>
@@ -106,12 +106,12 @@ export default function DashboardPage() {
     ]
 
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 dark:bg-gray-900">
         <Navbar />
 
         <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
           <div className="px-4 py-6 sm:px-0">
-            <div className="mb-6 rounded-xl border border-yellow-200 bg-yellow-50 px-4 py-3 text-yellow-900">
+            <div className="mb-6 rounded-xl border border-yellow-200 dark:border-yellow-700 bg-yellow-50 dark:bg-yellow-900/20 px-4 py-3 text-yellow-900 dark:text-yellow-200">
               You’re in <span className="font-semibold">Guest Mode</span>. Create an account to connect your real accounts and track
               spending.
             </div>
@@ -130,22 +130,22 @@ export default function DashboardPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5">
                 <p className="text-sm text-gray-500">Net worth</p>
                 <p className="mt-2 text-2xl font-semibold text-gray-900">{formatCurrency(14879.57)}</p>
                 <p className="mt-1 text-xs text-gray-500">Across {guestAccounts.length} accounts</p>
               </div>
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5">
                 <p className="text-sm text-gray-500">Income (30d)</p>
                 <p className="mt-2 text-2xl font-semibold text-green-700">{formatCurrency(4200)}</p>
                 <p className="mt-1 text-xs text-gray-500">Paychecks + other income</p>
               </div>
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5">
                 <p className="text-sm text-gray-500">Spending (30d)</p>
                 <p className="mt-2 text-2xl font-semibold text-red-700">{formatCurrency(2735)}</p>
                 <p className="mt-1 text-xs text-gray-500">Bills + day-to-day</p>
               </div>
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5">
                 <p className="text-sm text-gray-500">Savings rate</p>
                 <p className="mt-2 text-2xl font-semibold text-gray-900">35%</p>
                 <p className="mt-1 text-xs text-gray-500">Income minus spending</p>
@@ -153,7 +153,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 lg:col-span-2">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 lg:col-span-2">
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-base font-semibold text-gray-900">Cashflow snapshot</h3>
                   <span className="text-xs text-gray-500">Last 30 days</span>
@@ -164,7 +164,7 @@ export default function DashboardPage() {
                   ]}
                 />
               </div>
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5">
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-base font-semibold text-gray-900">Spending by category</h3>
                   <span className="text-xs text-gray-500">Sample</span>
@@ -174,7 +174,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5">
                 <h3 className="text-base font-semibold text-gray-900 mb-2">Accounts</h3>
                 <div className="space-y-3">
                   {guestAccounts.map((a) => (
@@ -188,7 +188,7 @@ export default function DashboardPage() {
                   ))}
                 </div>
               </div>
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5">
                 <h3 className="text-base font-semibold text-gray-900 mb-2">Recent activity</h3>
                 <p className="text-sm text-gray-600">
                   Sign in to track real transactions and see your recent activity here.
@@ -218,7 +218,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 dark:bg-gray-900">
       <Navbar />
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
@@ -240,22 +240,22 @@ export default function DashboardPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5">
               <p className="text-sm text-gray-500">Total balance</p>
               <p className="mt-2 text-2xl font-semibold text-gray-900">{formatCurrency(summary.total_balance)}</p>
               <p className="mt-1 text-xs text-gray-500">Across {accounts.length} active accounts</p>
             </div>
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5">
               <p className="text-sm text-gray-500">Income (month)</p>
               <p className="mt-2 text-2xl font-semibold text-green-700">{formatCurrency(summary.month_income)}</p>
               <p className="mt-1 text-xs text-gray-500">This month to date</p>
             </div>
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5">
               <p className="text-sm text-gray-500">Expenses (month)</p>
               <p className="mt-2 text-2xl font-semibold text-red-700">{formatCurrency(summary.month_expenses)}</p>
               <p className="mt-1 text-xs text-gray-500">This month to date</p>
             </div>
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5">
               <p className="text-sm text-gray-500">Net (month)</p>
               <p className={['mt-2 text-2xl font-semibold', summary.month_net >= 0 ? 'text-green-700' : 'text-red-700'].join(' ')}>
                 {formatCurrency(summary.month_net)}
@@ -279,7 +279,7 @@ export default function DashboardPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 lg:col-span-2">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 lg:col-span-2">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-base font-semibold text-gray-900">Income vs expenses</h3>
                 <span className="text-xs text-gray-500">Last {dateRangeDays} days</span>
@@ -295,7 +295,7 @@ export default function DashboardPage() {
                 ]}
               />
             </div>
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-base font-semibold text-gray-900">Spending by category</h3>
                 <span className="text-xs text-gray-500">Last {dateRangeDays} days</span>
@@ -315,7 +315,7 @@ export default function DashboardPage() {
           {(budgets.length > 0 || goals.length > 0) && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
               {budgets.length > 0 && (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="text-base font-semibold text-gray-900">Budget progress</h3>
                     <Link href="/budgets" className="text-sm text-primary-700 hover:text-primary-800">View all</Link>
@@ -339,7 +339,7 @@ export default function DashboardPage() {
                 </div>
               )}
               {goals.length > 0 && (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="text-base font-semibold text-gray-900">Goal progress</h3>
                     <Link href="/goals" className="text-sm text-primary-700 hover:text-primary-800">View all</Link>
@@ -366,7 +366,7 @@ export default function DashboardPage() {
           )}
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5">
               <h3 className="text-base font-semibold text-gray-900 mb-4">Accounts</h3>
               {accounts.length === 0 ? (
                 <p className="text-sm text-gray-500">No accounts yet. Add an account to start tracking balances.</p>
@@ -385,7 +385,7 @@ export default function DashboardPage() {
               )}
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-base font-semibold text-gray-900">Recent transactions</h3>
                 <Link href="/transactions" className="text-sm text-primary-700 hover:text-primary-800">

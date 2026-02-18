@@ -113,7 +113,9 @@ docker compose up -d --build
 
 2. Access the application:
    - Backend API: `http://localhost:8000`
-   - Frontend: `http://localhost:3000`
+   - Frontend: `http://localhost:3000` (run separately with `cd frontend && npm run dev`; Docker Compose runs backend + Postgres only)
+
+For **production deployment** (env vars, CORS, migrations, health check, Docker prod override), see **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)**.
 
 ## Project Structure
 
