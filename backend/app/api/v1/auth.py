@@ -6,11 +6,32 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from app.db.session import get_db
-from app.core.security import create_access_token, create_refresh_token, verify_password, get_password_hash
+import logging
+from app.core.security import (
+    create_access_token,
+    create_refresh_token,
+    create_reset_token,
+    decode_token,
+    verify_password,
+    get_password_hash,
+)
 from app.core.config import settings
-from app.schemas.user import UserCreate, User, Token, UserLogin, RefreshTokenRequest
+from app.schemas.user import (
+    UserCreate,
+    User,
+    UserUpdate,
+    Token,
+    UserLogin,
+    RefreshTokenRequest,
+    ForgotPasswordRequest,
+    ForgotPasswordResponse,
+    ResetPasswordRequest,
+    ResetPasswordResponse,
+)
 from app.models.user import User as UserModel
 from app.dependencies import get_current_user
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -88,8 +109,6 @@ async def refresh_token(
     db: Session = Depends(get_db)
 ):
     """Refresh access token using refresh token."""
-    from app.core.security import decode_token
-    
     payload = decode_token(token_data.refresh_token)
     if payload is None or payload.get("type") != "refresh":
         raise HTTPException(
@@ -125,4 +144,66 @@ async def refresh_token(
 async def get_current_user_info(current_user: UserModel = Depends(get_current_user)):
     """Get current user information."""
     return current_user
+
+
+@router.patch("/me", response_model=User)
+async def update_current_user(
+    body: UserUpdate,
+    current_user: UserModel = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Update current user profile (email, username, full_name)."""
+    update_data = body.model_dump(exclude_unset=True)
+    if not update_data:
+        return current_user
+    if "email" in update_data:
+        existing = db.query(UserModel).filter(
+            UserModel.email == update_data["email"],
+            UserModel.id != current_user.id,
+        ).first()
+        if existing:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already in use")
+    if "username" in update_data:
+        existing = db.query(UserModel).filter(
+            UserModel.username == update_data["username"],
+            UserModel.id != current_user.id,
+        ).first()
+        if existing:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username already in use")
+    for key, value in update_data.items():
+        setattr(current_user, key, value)
+    db.commit()
+    db.refresh(current_user)
+    return current_user
+
+
+@router.post("/forgot-password", response_model=ForgotPasswordResponse)
+async def forgot_password(body: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    """
+    Request password reset. If the email exists, a reset token is generated.
+    In production you would send the reset link by email; in dev it is logged.
+    """
+    user = db.query(UserModel).filter(UserModel.email == body.email).first()
+    if user and user.is_active:
+        reset_token = create_reset_token(data={"sub": user.id})
+        base = getattr(settings, "FRONTEND_URL", None) or "http://localhost:3000"
+        reset_link = f"{base.rstrip('/')}/reset-password?token={reset_token}"
+        logger.info("Password reset link for %s (dev only, do not log in production): %s", body.email, reset_link)
+        # TODO: send email with reset_link in production
+    return ForgotPasswordResponse()
+
+
+@router.post("/reset-password", response_model=ResetPasswordResponse)
+async def reset_password(body: ResetPasswordRequest, db: Session = Depends(get_db)):
+    """Reset password using token from forgot-password flow."""
+    payload = decode_token(body.token)
+    if payload is None or payload.get("type") != "reset":
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired reset link")
+    user_id = payload.get("sub")
+    user = db.query(UserModel).filter(UserModel.id == user_id).first()
+    if not user or not user.is_active:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired reset link")
+    user.hashed_password = get_password_hash(body.new_password)
+    db.commit()
+    return ResetPasswordResponse()
 

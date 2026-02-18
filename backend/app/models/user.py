@@ -28,7 +28,8 @@ class User(Base):
     goals = relationship("Goal", back_populates="user", cascade="all, delete-orphan")
     junior_profiles = relationship("JuniorProfile", back_populates="parent", cascade="all, delete-orphan")
     banking_messages = relationship("BankingMessage", back_populates="user", cascade="all, delete-orphan")
-    
+    payments = relationship("Payment", back_populates="user", cascade="all, delete-orphan")
+
     def __repr__(self):
         return f"<User(id={self.id}, email={self.email}, username={self.username})>"
 

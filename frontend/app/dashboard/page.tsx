@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { apiClient } from '@/lib/api'
 import { formatCurrency } from '@/lib/utils'
 import Link from 'next/link'
@@ -14,6 +15,7 @@ import type { Accounts } from '@/lib/schemas/account'
 import type { ExpensesByCategory, IncomeVsExpenses } from '@/lib/schemas/reports'
 
 export default function DashboardPage() {
+  const searchParams = useSearchParams()
   const [summary, setSummary] = useState<DashboardSummary | null>(null)
   const [accounts, setAccounts] = useState<Accounts>([])
   const [expensesByCategory, setExpensesByCategory] = useState<ExpensesByCategory>([])
@@ -23,10 +25,27 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [isGuest, setIsGuest] = useState(false)
   const [dateRangeDays, setDateRangeDays] = useState(30)
+  const [paymentBanner, setPaymentBanner] = useState<{ type: 'success' | 'failed'; message?: string; refId?: string } | null>(null)
 
   useEffect(() => {
     loadDashboard()
   }, [dateRangeDays])
+
+  useEffect(() => {
+    const payment = searchParams.get('payment')
+    if (payment === 'success') {
+      setPaymentBanner({
+        type: 'success',
+        refId: searchParams.get('ref_id') || undefined,
+        message: searchParams.get('amount_rials') ? `Payment of ${Number(searchParams.get('amount_rials')).toLocaleString()} Rials completed.` : 'Payment completed.',
+      })
+    } else if (payment === 'failed') {
+      setPaymentBanner({
+        type: 'failed',
+        message: searchParams.get('message') || 'Payment failed or was cancelled.',
+      })
+    }
+  }, [searchParams])
 
   const loadDashboard = async () => {
     try {
@@ -223,14 +242,59 @@ export default function DashboardPage() {
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
+          {paymentBanner && (
+            <div
+              className={`mb-4 rounded-lg border px-4 py-3 flex items-center justify-between ${
+                paymentBanner.type === 'success'
+                  ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-800 dark:text-green-200'
+                  : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-800 dark:text-red-200'
+              }`}
+            >
+              <span>{paymentBanner.message}</span>
+              <button
+                type="button"
+                onClick={() => setPaymentBanner(null)}
+                className="ml-2 text-current opacity-70 hover:opacity-100"
+                aria-label="Dismiss"
+              >
+                ×
+              </button>
+            </div>
+          )}
           <BudgetAlerts />
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+            <Link
+              href="/transactions"
+              className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 text-center hover:bg-gray-50 dark:hover:bg-gray-700/50 transition"
+            >
+              <span className="text-sm font-medium text-gray-900 dark:text-white">Add transaction</span>
+            </Link>
+            <Link
+              href="/accounts"
+              className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 text-center hover:bg-gray-50 dark:hover:bg-gray-700/50 transition"
+            >
+              <span className="text-sm font-medium text-gray-900 dark:text-white">Add account</span>
+            </Link>
+            <Link
+              href="/banking-messages"
+              className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 text-center hover:bg-gray-50 dark:hover:bg-gray-700/50 transition"
+            >
+              <span className="text-sm font-medium text-gray-900 dark:text-white">Parse bank SMS</span>
+            </Link>
+            <Link
+              href="/payments"
+              className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 text-center hover:bg-gray-50 dark:hover:bg-gray-700/50 transition"
+            >
+              <span className="text-sm font-medium text-gray-900 dark:text-white">Pay (ZarinPal)</span>
+            </Link>
+          </div>
           <div className="flex items-start justify-between gap-4 mb-6">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Overview</h2>
-              <p className="text-sm text-gray-600 mt-1">Last refresh: {format(new Date(), 'PPpp')}</p>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Overview</h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Last refresh: {format(new Date(), 'PPpp')}</p>
             </div>
             <div className="flex gap-2">
-              <Link href="/transactions" className="px-4 py-2 rounded-md border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50">
+              <Link href="/transactions" className="px-4 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
                 Add transaction
               </Link>
               <Link href="/accounts" className="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 text-sm font-medium">

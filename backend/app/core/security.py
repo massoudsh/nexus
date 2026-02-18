@@ -50,3 +50,13 @@ def decode_token(token: str) -> Optional[dict]:
     except JWTError:
         return None
 
+
+def create_reset_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+    """Create a JWT password-reset token (short-lived)."""
+    to_encode = data.copy()
+    if expires_delta is None:
+        expires_delta = timedelta(hours=1)
+    expire = datetime.utcnow() + expires_delta
+    to_encode.update({"exp": expire, "type": "reset"})
+    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+

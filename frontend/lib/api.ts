@@ -146,6 +146,21 @@ class ApiClient {
     return response.data;
   }
 
+  async forgotPassword(email: string) {
+    const response = await this.client.post('/auth/forgot-password', { email });
+    return response.data as { message: string };
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    const response = await this.client.post('/auth/reset-password', { token, new_password: newPassword });
+    return response.data as { message: string };
+  }
+
+  async updateProfile(data: { email?: string; username?: string; full_name?: string }) {
+    const response = await this.client.patch('/auth/me', data);
+    return response.data;
+  }
+
   // Account endpoints
   async getAccounts() {
     const response = await this.client.get('/accounts');
@@ -229,6 +244,38 @@ class ApiClient {
     const response = await this.client.post(`/banking-messages/${messageId}/create-transaction`, {
       account_id: accountId,
       category_id: categoryId ?? undefined,
+    });
+    return response.data;
+  }
+
+  // Payments (ZarinPal gateway)
+  async requestZarinPalPayment(data: {
+    amount_rials: number;
+    description?: string;
+    email?: string;
+    mobile?: string;
+  }) {
+    const response = await this.client.post('/payments/zarinpal/request', data);
+    return response.data as { payment_url: string; authority: string; amount_rials: number };
+  }
+
+  async getPayments(limit?: number) {
+    const response = await this.client.get('/payments', { params: { limit } });
+    return response.data as Array<{
+      id: number;
+      amount_rials: number;
+      description: string | null;
+      authority: string | null;
+      status: string;
+      ref_id: string | null;
+      gateway: string;
+      created_at: string | null;
+    }>;
+  }
+
+  async recordPaymentAsIncome(paymentId: number, accountId: number) {
+    const response = await this.client.post(`/payments/${paymentId}/record-income`, {
+      account_id: accountId,
     });
     return response.data;
   }

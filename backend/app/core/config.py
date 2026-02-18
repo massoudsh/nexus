@@ -38,7 +38,13 @@ class Settings(BaseSettings):
     
     # API
     API_V1_STR: str = "/api/v1"
-    
+
+    # ZarinPal payment gateway (optional)
+    ZARINPAL_MERCHANT_ID: Optional[str] = None  # 36-char merchant ID from ZarinPal
+    ZARINPAL_SANDBOX: bool = True  # use sandbox when True
+    ZARINPAL_CALLBACK_BASE_URL: Optional[str] = None  # e.g. https://api.example.com (backend base for callback URL)
+    FRONTEND_URL: Optional[str] = None  # e.g. https://app.example.com (redirect after payment; default localhost:3000)
+
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
     def parse_cors_origins(cls, v: Union[str, list]) -> list[str]:

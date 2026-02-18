@@ -2,9 +2,15 @@
 FastAPI application entry point.
 """
 import logging
+import time
+from collections import defaultdict
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
+from starlette.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 
 from app.core.config import settings
@@ -21,11 +27,38 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
 )
 
+# In-memory rate limit: 100 requests per minute per client (by X-Forwarded-For or client.host)
+RATE_LIMIT_REQUESTS = 100
+RATE_LIMIT_WINDOW_SEC = 60
+_rate_limit_store: dict[str, list[float]] = defaultdict(list)
+
+
+class RateLimitMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        path = request.scope.get("path", "")
+        if path in ("/", "/health", "/docs", "/openapi.json", "/redoc"):
+            return await call_next(request)
+        client = request.client
+        key = request.headers.get("x-forwarded-for", client.host if client else "unknown").split(",")[0].strip()
+        now = time.monotonic()
+        window_start = now - RATE_LIMIT_WINDOW_SEC
+        _rate_limit_store[key] = [t for t in _rate_limit_store[key] if t > window_start]
+        if len(_rate_limit_store[key]) >= RATE_LIMIT_REQUESTS:
+            return JSONResponse(
+                status_code=429,
+                content={"detail": "Too many requests. Please try again later."},
+            )
+        _rate_limit_store[key].append(now)
+        return await call_next(request)
+
+
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
     debug=settings.DEBUG,
 )
+# Rate limit API only (skip / and /health for load balancers)
+app.add_middleware(RateLimitMiddleware)
 
 # CORS middleware
 app.add_middleware(

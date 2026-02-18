@@ -1,7 +1,8 @@
 """
 User schemas for request/response validation.
 """
-from pydantic import BaseModel, EmailStr, Field
+import re
+from pydantic import BaseModel, EmailStr, Field, field_validator
 from typing import Optional
 from datetime import datetime
 
@@ -14,8 +15,19 @@ class UserBase(BaseModel):
 
 
 class UserCreate(UserBase):
-    """Schema for user creation."""
-    password: str = Field(..., min_length=8)
+    """Schema for user creation. Password policy: min 8 chars, at least one letter and one digit."""
+    password: str = Field(..., min_length=8, max_length=128)
+
+    @field_validator("password")
+    @classmethod
+    def password_policy(cls, v: str) -> str:
+        if len(v) < 8:
+            raise ValueError("Password must be at least 8 characters")
+        if not re.search(r"[a-zA-Z]", v):
+            raise ValueError("Password must contain at least one letter")
+        if not re.search(r"\d", v):
+            raise ValueError("Password must contain at least one digit")
+        return v
 
 
 class UserUpdate(BaseModel):
@@ -64,4 +76,35 @@ class TokenData(BaseModel):
 class RefreshTokenRequest(BaseModel):
     """Schema for refresh token request."""
     refresh_token: str
+
+
+class ForgotPasswordRequest(BaseModel):
+    """Schema for forgot-password (stub: no email sent)."""
+    email: EmailStr
+
+
+class ForgotPasswordResponse(BaseModel):
+    """Generic response to avoid revealing whether email exists."""
+    message: str = "If an account exists with this email, you will receive reset instructions."
+
+
+class ResetPasswordRequest(BaseModel):
+    """Schema for reset-password (token from email link + new password)."""
+    token: str
+    new_password: str = Field(..., min_length=8, max_length=128)
+
+    @field_validator("new_password")
+    @classmethod
+    def password_policy(cls, v: str) -> str:
+        if len(v) < 8:
+            raise ValueError("Password must be at least 8 characters")
+        if not re.search(r"[a-zA-Z]", v):
+            raise ValueError("Password must contain at least one letter")
+        if not re.search(r"\d", v):
+            raise ValueError("Password must contain at least one digit")
+        return v
+
+
+class ResetPasswordResponse(BaseModel):
+    message: str = "Password has been reset. You can sign in with your new password."
 
