@@ -8,6 +8,7 @@ import { format, subDays } from 'date-fns'
 import Navbar from '@/components/layout/Navbar'
 import ExpenseChart from '@/components/charts/ExpenseChart'
 import IncomeExpenseBar from '@/components/charts/IncomeExpenseBar'
+import { BudgetAlerts } from '@/components/dashboard/BudgetAlerts'
 import type { DashboardSummary } from '@/lib/schemas/dashboard'
 import type { Accounts } from '@/lib/schemas/account'
 import type { ExpensesByCategory, IncomeVsExpenses } from '@/lib/schemas/reports'
@@ -17,32 +18,34 @@ export default function DashboardPage() {
   const [accounts, setAccounts] = useState<Accounts>([])
   const [expensesByCategory, setExpensesByCategory] = useState<ExpensesByCategory>([])
   const [incomeVsExpenses, setIncomeVsExpenses] = useState<IncomeVsExpenses | null>(null)
+  const [budgets, setBudgets] = useState<Array<{ id: number; name: string; amount: number; spent?: number; percentage_used?: number }>>([])
+  const [goals, setGoals] = useState<Array<{ id: number; name: string; target_amount: number; current_amount: number; status: string }>>([])
   const [loading, setLoading] = useState(true)
   const [isGuest, setIsGuest] = useState(false)
+  const [dateRangeDays, setDateRangeDays] = useState(30)
 
   useEffect(() => {
     loadDashboard()
-  }, [])
+  }, [dateRangeDays])
 
   const loadDashboard = async () => {
     try {
-      const [summaryData, accountsData, expByCat, incVsExp] = await Promise.all([
+      const start = format(subDays(new Date(), dateRangeDays), "yyyy-MM-dd'T'HH:mm:ssxxx")
+      const end = format(new Date(), "yyyy-MM-dd'T'HH:mm:ssxxx")
+      const [summaryData, accountsData, expByCat, incVsExp, budgetsData, goalsData] = await Promise.all([
         apiClient.getDashboardSummary(),
         apiClient.getAccounts(),
-        apiClient.getExpensesByCategory(
-          // last 30 days
-          format(subDays(new Date(), 30), "yyyy-MM-dd'T'HH:mm:ssxxx"),
-          format(new Date(), "yyyy-MM-dd'T'HH:mm:ssxxx")
-        ),
-        apiClient.getIncomeVsExpenses(
-          format(subDays(new Date(), 30), "yyyy-MM-dd'T'HH:mm:ssxxx"),
-          format(new Date(), "yyyy-MM-dd'T'HH:mm:ssxxx")
-        ),
+        apiClient.getExpensesByCategory(start, end),
+        apiClient.getIncomeVsExpenses(start, end),
+        apiClient.getBudgets().catch(() => []),
+        apiClient.getGoals().catch(() => []),
       ])
       setSummary(summaryData)
       setAccounts(accountsData)
       setExpensesByCategory(expByCat)
       setIncomeVsExpenses(incVsExp)
+      setBudgets(Array.isArray(budgetsData) ? budgetsData : [])
+      setGoals(Array.isArray(goalsData) ? goalsData : [])
     } catch (error) {
       console.error('Failed to load dashboard:', error)
       const status = (error as any)?.response?.status
@@ -220,6 +223,7 @@ export default function DashboardPage() {
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
+          <BudgetAlerts />
           <div className="flex items-start justify-between gap-4 mb-6">
             <div>
               <h2 className="text-2xl font-bold text-gray-900">Overview</h2>
@@ -260,11 +264,25 @@ export default function DashboardPage() {
             </div>
           </div>
 
+          <div className="flex gap-2 mb-4">
+            <span className="text-sm text-gray-600">Date range:</span>
+            {[7, 30, 90].map((d) => (
+              <button
+                key={d}
+                type="button"
+                onClick={() => setDateRangeDays(d)}
+                className={`px-3 py-1 rounded text-sm font-medium ${dateRangeDays === d ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+              >
+                {d}d
+              </button>
+            ))}
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 lg:col-span-2">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-base font-semibold text-gray-900">Income vs expenses</h3>
-                <span className="text-xs text-gray-500">Last 30 days</span>
+                <span className="text-xs text-gray-500">Last {dateRangeDays} days</span>
               </div>
               <IncomeExpenseBar
                 data={[
@@ -280,7 +298,7 @@ export default function DashboardPage() {
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-base font-semibold text-gray-900">Spending by category</h3>
-                <span className="text-xs text-gray-500">Last 30 days</span>
+                <span className="text-xs text-gray-500">Last {dateRangeDays} days</span>
               </div>
               <ExpenseChart
                 data={expensesByCategory.map((x) => ({
@@ -293,6 +311,59 @@ export default function DashboardPage() {
               )}
             </div>
           </div>
+
+          {(budgets.length > 0 || goals.length > 0) && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+              {budgets.length > 0 && (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-base font-semibold text-gray-900">Budget progress</h3>
+                    <Link href="/budgets" className="text-sm text-primary-700 hover:text-primary-800">View all</Link>
+                  </div>
+                  <div className="space-y-3">
+                    {budgets.slice(0, 3).map((b) => {
+                      const pct = (b as { percentage_used?: number }).percentage_used ?? (typeof (b as { spent?: number }).spent === 'number' && b.amount ? Math.min(100, ((b as { spent?: number }).spent! / b.amount) * 100) : 0)
+                      return (
+                        <div key={b.id}>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span className="font-medium text-gray-900">{b.name}</span>
+                            <span className="text-gray-600">{Math.round(pct)}%</span>
+                          </div>
+                          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div className="h-full bg-primary-600 rounded-full" style={{ width: `${Math.min(100, pct)}%` }} />
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+              {goals.length > 0 && (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-base font-semibold text-gray-900">Goal progress</h3>
+                    <Link href="/goals" className="text-sm text-primary-700 hover:text-primary-800">View all</Link>
+                  </div>
+                  <div className="space-y-3">
+                    {goals.slice(0, 3).map((g) => {
+                      const pct = g.target_amount > 0 ? Math.min(100, (g.current_amount / g.target_amount) * 100) : 0
+                      return (
+                        <div key={g.id}>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span className="font-medium text-gray-900">{g.name}</span>
+                            <span className="text-gray-600">{formatCurrency(g.current_amount)} / {formatCurrency(g.target_amount)}</span>
+                          </div>
+                          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div className="h-full bg-green-600 rounded-full" style={{ width: `${pct}%` }} />
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">

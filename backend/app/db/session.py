@@ -2,14 +2,27 @@
 Database session management.
 """
 from sqlalchemy import create_engine
+from sqlalchemy.engine.url import make_url
 from sqlalchemy.orm import sessionmaker, Session
 from app.core.config import settings
 
-engine = create_engine(
-    settings.DATABASE_URL,
-    pool_pre_ping=True,
-    echo=settings.DEBUG
-)
+database_url = settings.DATABASE_URL
+
+engine_kwargs: dict = {
+    "pool_pre_ping": True,
+    "echo": settings.DEBUG,
+}
+
+try:
+    url = make_url(database_url)
+    if url.drivername.startswith("sqlite"):
+        engine_kwargs["connect_args"] = {"check_same_thread": False}
+        engine_kwargs["pool_pre_ping"] = False
+except Exception:
+    # If DATABASE_URL isn't parseable, fall back to defaults.
+    pass
+
+engine = create_engine(database_url, **engine_kwargs)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

@@ -20,7 +20,9 @@ wheels/
 *.egg
 venv/
 .venv/
+.venv-local/
 backend/.venv/
+backend/.venv-local/
 env/
 ENV/
 
@@ -42,7 +44,8 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
-# IDE
+# IDE / Editor
+.cursor/
 .vscode/
 .idea/
 *.swp

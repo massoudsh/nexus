@@ -7,12 +7,19 @@ import Navbar from '@/components/layout/Navbar'
 import TransactionForm from '@/components/forms/TransactionForm'
 import type { Account } from '@/lib/schemas/account'
 import type { Transaction } from '@/lib/schemas/transaction'
+import type { CategoryOption } from '@/components/forms/TransactionForm'
 
 export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [accounts, setAccounts] = useState<Account[]>([])
+  const [categories, setCategories] = useState<CategoryOption[]>([])
   const [loading, setLoading] = useState(true)
   const [formOpen, setFormOpen] = useState(false)
+  const [importOpen, setImportOpen] = useState(false)
+  const [importAccountId, setImportAccountId] = useState<number | ''>('')
+  const [importFile, setImportFile] = useState<File | null>(null)
+  const [importResult, setImportResult] = useState<{ created: number; errors: string[] } | null>(null)
+  const [importing, setImporting] = useState(false)
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null)
   const [deletingId, setDeletingId] = useState<number | null>(null)
 
@@ -36,10 +43,20 @@ export default function TransactionsPage() {
     }
   }, [])
 
+  const loadCategories = useCallback(async () => {
+    try {
+      const data = await apiClient.getCategories()
+      setCategories(Array.isArray(data) ? data : [])
+    } catch (error) {
+      console.error('Failed to load categories:', error)
+    }
+  }, [])
+
   useEffect(() => {
     loadTransactions()
     loadAccounts()
-  }, [loadTransactions, loadAccounts])
+    loadCategories()
+  }, [loadTransactions, loadAccounts, loadCategories])
 
   const openCreate = () => {
     setEditingTransaction(null)
@@ -52,6 +69,28 @@ export default function TransactionsPage() {
   const closeForm = () => {
     setFormOpen(false)
     setEditingTransaction(null)
+  }
+
+  const handleImport = async () => {
+    if (!importFile || importAccountId === '') return
+    setImporting(true)
+    setImportResult(null)
+    try {
+      const result = await apiClient.importTransactions(importFile, importAccountId as number)
+      setImportResult({ created: result.created, errors: result.errors || [] })
+      if (result.created > 0) await loadTransactions()
+    } catch (err) {
+      setImportResult({ created: 0, errors: [(err as Error).message] })
+    } finally {
+      setImporting(false)
+    }
+  }
+
+  const closeImport = () => {
+    setImportOpen(false)
+    setImportAccountId('')
+    setImportFile(null)
+    setImportResult(null)
   }
 
   const handleDelete = async (id: number) => {
@@ -75,13 +114,22 @@ export default function TransactionsPage() {
         <div className="px-4 py-6 sm:px-0">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-gray-900">Transactions</h2>
-            <button
-              type="button"
-              onClick={openCreate}
-              className="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 font-medium"
-            >
-              Add Transaction
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setImportOpen(true)}
+                className="px-4 py-2 rounded-md border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                Import CSV
+              </button>
+              <button
+                type="button"
+                onClick={openCreate}
+                className="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 font-medium"
+              >
+                Add Transaction
+              </button>
+            </div>
           </div>
 
           {loading ? (
@@ -142,6 +190,7 @@ export default function TransactionsPage() {
             </h3>
             <TransactionForm
               accounts={accounts}
+              categories={categories}
               transaction={editingTransaction}
               onSuccess={() => {
                 loadTransactions()
@@ -149,6 +198,67 @@ export default function TransactionsPage() {
               }}
               onCancel={closeForm}
             />
+          </div>
+        </div>
+      )}
+
+      {importOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" aria-modal="true" role="dialog">
+          <div className="bg-white rounded-xl shadow-lg max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Import from CSV</h3>
+            <p className="text-sm text-gray-600 mb-3">CSV must have headers: date, amount, type, description (type = income or expense).</p>
+            <div className="space-y-3 mb-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Account</label>
+                <select
+                  value={importAccountId}
+                  onChange={(e) => setImportAccountId(e.target.value === '' ? '' : Number(e.target.value))}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                >
+                  <option value="">Select account</option>
+                  {accounts.map((a) => (
+                    <option key={a.id} value={a.id}>{a.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">CSV file</label>
+                <input
+                  type="file"
+                  accept=".csv"
+                  onChange={(e) => setImportFile(e.target.files?.[0] ?? null)}
+                  className="w-full text-sm text-gray-600 file:mr-2 file:py-1 file:px-3 file:rounded file:border file:border-gray-300"
+                />
+              </div>
+            </div>
+            {importResult && (
+              <div className="mb-4 p-3 rounded-md bg-gray-50 text-sm">
+                <p className="font-medium text-green-700">Imported {importResult.created} transaction(s).</p>
+                {importResult.errors.length > 0 && (
+                  <ul className="mt-2 text-amber-800 list-disc list-inside">
+                    {importResult.errors.slice(0, 5).map((msg, i) => (
+                      <li key={i}>{msg}</li>
+                    ))}
+                    {importResult.errors.length > 5 && (
+                      <li>… and {importResult.errors.length - 5} more</li>
+                    )}
+                  </ul>
+                )}
+              </div>
+            )}
+            <div className="flex justify-end gap-2">
+              <button type="button" onClick={closeImport} className="px-4 py-2 rounded-md border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                Close
+              </button>
+              <button
+                type="button"
+                onClick={handleImport}
+                disabled={importing || !importFile || importAccountId === ''}
+                className="px-4 py-2 rounded-md bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 disabled:opacity-50"
+              >
+                {importing ? 'Importing...' : 'Import'}
+              </button>
+            </div>
           </div>
         </div>
       )}

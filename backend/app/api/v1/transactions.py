@@ -1,9 +1,12 @@
 """
 Transactions API endpoints.
 """
+import csv
+import io
 from typing import List, Optional
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.dependencies import get_current_user
@@ -36,6 +39,58 @@ async def get_transactions(
         start_date=start_date,
         end_date=end_date
     )
+
+
+@router.get("/export")
+async def export_transactions_csv(
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Export transactions as CSV."""
+    service = TransactionsService(db)
+    data = service.export_for_user(current_user.id, start_date=start_date, end_date=end_date)
+    buf = io.StringIO()
+    writer = csv.DictWriter(buf, fieldnames=["id", "date", "amount", "type", "description", "account_id", "category_id"])
+    writer.writeheader()
+    writer.writerows(data)
+    buf.seek(0)
+    return StreamingResponse(
+        iter([buf.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=transactions.csv"},
+    )
+
+
+@router.post("/import")
+async def import_transactions_csv(
+    file: UploadFile = File(...),
+    account_id: int = Query(..., description="Account to assign imported transactions to"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Import transactions from a CSV file.
+    CSV must have headers: date, amount, type, description (type = income or expense).
+    """
+    if not file.filename or not file.filename.lower().endswith(".csv"):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File must be a CSV")
+    content = await file.read()
+    try:
+        text = content.decode("utf-8")
+    except UnicodeDecodeError:
+        text = content.decode("latin-1")
+    reader = csv.DictReader(io.StringIO(text))
+    rows = list(reader)
+    if not rows:
+        return {"created": 0, "errors": ["CSV is empty or has no data rows."]}
+    service = TransactionsService(db)
+    try:
+        created, errors = service.import_from_rows(current_user.id, account_id, rows)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    return {"created": created, "errors": errors, "total_rows": len(rows)}
 
 
 @router.get("/{transaction_id}", response_model=TransactionSchema)

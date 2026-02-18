@@ -1,63 +1,96 @@
-# Human-readable repo descriptions for GitHub
+# GitHub repo descriptions
 
-Copy the **Description** line into each repo’s “About” → “Description” on GitHub.
+Short descriptions for each repo’s **About → Description** on GitHub. Copy the **Description** line (or the **Short** variant) into the field and save.
 
 ---
 
-### kyleandkenny
+## Nexus (this repo)
+
 **Description:**  
-Meet your creators, Kyle & Kenny  
+Personal finance, simplified — accounts, transactions, budgets, goals, and Junior Smart Savings for teaching kids healthy money habits.
 
-*(Already good — optional shorter: “Meet Kyle & Kenny”)*
+**Short (if character limit):**  
+Personal finance app: accounts, budgets, goals & parent-controlled Junior Smart Savings.
+
+**Topics (suggested):** `personal-finance` `nextjs` `fastapi` `typescript` `tailwind`
 
 ---
 
-### findetect-gnn
+## kyleandkenny
+
 **Description:**  
-Fraud or anomaly detection using Graph Neural Networks  
+Meet the creators — Kyle & Kenny.
 
-*(If it’s financial: “Financial anomaly detection with Graph Neural Networks”)*
+**Short:**  
+Meet Kyle & Kenny.
 
 ---
 
-### Findash
+## findetect-gnn
+
 **Description:**  
-Financial dashboard for data visualization and insights  
+Fraud and anomaly detection powered by Graph Neural Networks.
 
-*(If it’s more generic: “Dashboard for data visualization and analytics”)*
+**Short:**  
+Financial anomaly detection with Graph Neural Networks.
+
+**Topics (suggested):** `gnn` `fraud-detection` `anomaly-detection` `graph-neural-networks`
 
 ---
 
-### CMI_Detection
+## Findash
+
 **Description:**  
-Detection and analysis pipeline for CMI  
+Financial dashboard for data visualization, analytics, and actionable insights.
 
-*(If you use a specific CMI meaning, e.g. Credit/Compliance/Clinical, you can use: “Credit/Compliance/Clinical [pick one] CMI detection and analysis”)*
+**Short:**  
+Dashboard for financial data visualization and analytics.
+
+**Topics (suggested):** `dashboard` `data-visualization` `analytics` `finance`
 
 ---
 
-### RFMinsight_Engine
+## CMI_Detection
+
 **Description:**  
-AI-powered RFM analysis: turn customer data into segmentation and marketing insights  
+Detection and analysis pipeline for CMI (Credit / Compliance / Clinical — pick the one that fits).
 
-*(Shorter than current; keeps the idea.)*
+**Short:**  
+CMI detection and analysis pipeline.
+
+**Topics (suggested):** `detection` `analysis` `pipeline`
 
 ---
 
-### RA3G-Agent
+## RFMinsight_Engine
+
 **Description:**  
-Local RAG with a governance agent that filters sensitive data and keeps logging private  
+AI-powered RFM analysis — turn customer data into segmentation and marketing insights.
 
-*(Shorter, human version of the current description.)*
+**Short:**  
+RFM segmentation and marketing insights from customer data.
+
+**Topics (suggested):** `rfm` `customer-segmentation` `marketing` `analytics`
 
 ---
 
-### personal-finance-app (this repo / Nexus)
+## RA3G-Agent
+
 **Description:**  
-Nexus — Personal finance app: accounts, transactions, budgets, and goals in one place  
+Local RAG with a governance agent that filters sensitive data and keeps logging private.
 
-*(Use this if the repo is still named `personal-finance-app`; after renaming to `nexus` you can use: “Personal finance, simplified: accounts, transactions, budgets, and goals.”)*
+**Short:**  
+Private local RAG with governance and sensitive-data filtering.
+
+**Topics (suggested):** `rag` `llm` `governance` `privacy`
 
 ---
 
-**How to set on GitHub:** Repo → **About** (right side) → pencil icon next to description → paste → Save.
+## How to set on GitHub
+
+1. Open the repo on GitHub.
+2. Click **About** (right sidebar).
+3. Click the pencil icon next to the description.
+4. Paste the **Description** (or **Short**) line.
+5. Optionally add **Topics** in the same About section.
+6. Click **Save changes**.

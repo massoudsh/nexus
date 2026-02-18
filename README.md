@@ -9,6 +9,7 @@ A full-stack personal finance application (Nexus) built with FastAPI backend and
 - Transaction tracking with categories
 - Budget management with spending tracking
 - Financial goals tracking
+- **Junior Smart Savings** — parent-controlled accounts for children: goal-based saving, automated deposits, progress tracking, rewards, and financial education
 - Dashboard with financial summaries
 - Reports and analytics
 - Expense forecasting
@@ -56,17 +57,20 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-4. Create a `.env` file in the backend directory:
+4. Create a `.env` file in the backend directory (see `backend/.env.example`). **PostgreSQL is required.**
 ```env
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/personalfinance
+AUTO_CREATE_DB=true
 SECRET_KEY=your-secret-key-change-in-production
 DEBUG=true
 ```
+Ensure PostgreSQL is running and the database exists (e.g. `createdb personalfinance`).
 
-5. Initialize the database:
-```bash
-python -m app.db.init_db
-```
+5. Initialize the database (choose one):
+   - **Quick start (create tables only):** `python -m app.db.init_db`
+   - **Production (Alembic migrations):**  
+     `alembic upgrade head`  
+     To create a new migration after model changes: `alembic revision --autogenerate -m "description"`
 
 6. Run the development server:
 ```bash
@@ -178,7 +182,7 @@ nexus/  # rename repo/folder from personal-finance-app to nexus if desired
 
 ## Development
 
-Phased development is tracked in [docs/PHASES.md](docs/PHASES.md) and via [GitHub issues](https://github.com/massoudsh/personal-finance-app/issues). Phase 1 (Foundation) is in progress.
+Phased development is tracked in [docs/PHASES.md](docs/PHASES.md) and via [GitHub issues](https://github.com/massoudsh/nexus/issues). User journeys (swimlane-style flows for transactions, accounts, budgets, goals, auth) are in [docs/USER_FLOWS.md](docs/USER_FLOWS.md).
 
 ### Running Tests
 ```bash

@@ -1,11 +1,11 @@
 """
 Transactions service for business logic.
 """
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from datetime import datetime
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
-from app.models.transaction import Transaction
+from app.models.transaction import Transaction, TransactionType
 from app.models.account import Account
 from app.schemas.transaction import TransactionCreate, TransactionUpdate
 from decimal import Decimal
@@ -136,4 +136,84 @@ class TransactionsService:
         self.db.delete(transaction)
         self.db.commit()
         return True
+
+    def import_from_rows(
+        self,
+        user_id: int,
+        account_id: int,
+        rows: List[Dict[str, Any]],
+    ) -> tuple[int, list[str]]:
+        """
+        Create transactions from a list of row dicts (e.g. from CSV).
+        Each row should have: date (str ISO or YYYY-MM-DD), amount (number), type (income|expense), description (optional).
+        Returns (created_count, list of error messages for invalid rows).
+        """
+        account = self.db.query(Account).filter(
+            Account.id == account_id,
+            Account.user_id == user_id,
+        ).first()
+        if not account:
+            raise ValueError("Account not found")
+        created = 0
+        errors: List[str] = []
+        for i, row in enumerate(rows):
+            try:
+                date_val = row.get("date")
+                amount_val = row.get("amount")
+                type_val = row.get("type", "").strip().lower()
+                description = (row.get("description") or "").strip() or None
+                if not date_val or amount_val is None:
+                    errors.append(f"Row {i + 1}: missing date or amount")
+                    continue
+                if type_val not in ("income", "expense"):
+                    errors.append(f"Row {i + 1}: type must be 'income' or 'expense'")
+                    continue
+                if isinstance(date_val, str):
+                    try:
+                        dt = datetime.fromisoformat(date_val.replace("Z", "+00:00"))
+                    except ValueError:
+                        dt = datetime.strptime(date_val.strip()[:10], "%Y-%m-%d")
+                else:
+                    dt = date_val
+                amount = Decimal(str(amount_val))
+                tx_type = TransactionType.INCOME if type_val == "income" else TransactionType.EXPENSE
+                create_data = TransactionCreate(
+                    account_id=account_id,
+                    category_id=None,
+                    amount=amount,
+                    transaction_type=tx_type,
+                    description=description,
+                    date=dt,
+                    notes=None,
+                )
+                self.create_transaction(create_data, user_id)
+                created += 1
+            except Exception as e:
+                errors.append(f"Row {i + 1}: {str(e)}")
+        return created, errors
+
+    def export_for_user(
+        self,
+        user_id: int,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+        limit: int = 10000,
+    ) -> List[Dict[str, Any]]:
+        """Return transactions as list of dicts for CSV export."""
+        tx_list = self.get_user_transactions(
+            user_id, skip=0, limit=limit,
+            start_date=start_date, end_date=end_date,
+        )
+        return [
+            {
+                "id": t.id,
+                "date": t.date.isoformat() if t.date else "",
+                "amount": float(t.amount),
+                "type": t.transaction_type.value,
+                "description": t.description or "",
+                "account_id": t.account_id,
+                "category_id": t.category_id or "",
+            }
+            for t in tx_list
+        ]
 

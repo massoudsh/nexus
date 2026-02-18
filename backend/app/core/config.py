@@ -14,9 +14,9 @@ class Settings(BaseSettings):
     APP_VERSION: str = "1.1.0"
     DEBUG: bool = False
     
-    # Database
+    # Database (PostgreSQL)
     DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/personalfinance"
-    AUTO_CREATE_DB: bool = False
+    AUTO_CREATE_DB: bool = False  # Set True in dev to create tables on startup
     
     # Security
     SECRET_KEY: str = "your-secret-key-change-in-production"

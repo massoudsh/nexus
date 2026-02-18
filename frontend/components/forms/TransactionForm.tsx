@@ -28,15 +28,24 @@ function fromDatetimeLocal(local: string): string {
   return new Date(local).toISOString()
 }
 
+export interface CategoryOption {
+  id: number
+  name: string
+  description?: string | null
+  color?: string | null
+}
+
 interface TransactionFormProps {
   accounts: Account[]
+  /** Categories for cost/expense and income (e.g. from getCategories). */
+  categories?: CategoryOption[]
   /** When set, form is in edit mode. */
   transaction?: Transaction | null
   onSuccess: () => void
   onCancel: () => void
 }
 
-export default function TransactionForm({ accounts, transaction, onSuccess, onCancel }: TransactionFormProps) {
+export default function TransactionForm({ accounts, categories = [], transaction, onSuccess, onCancel }: TransactionFormProps) {
   const isEdit = Boolean(transaction?.id)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -167,6 +176,27 @@ export default function TransactionForm({ accounts, transaction, onSuccess, onCa
           ))}
         </select>
       </div>
+      {categories.length > 0 && (
+        <div>
+          <label htmlFor="category_id" className="block text-sm font-medium text-gray-700">
+            Category (for costs / income)
+          </label>
+          <select
+            id="category_id"
+            name="category_id"
+            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+            value={formData.category_id === '' ? '' : formData.category_id}
+            onChange={handleChange}
+          >
+            <option value="">None</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
       <div>
         <label htmlFor="amount" className="block text-sm font-medium text-gray-700">
           Amount
