@@ -2,15 +2,29 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
 import Button from '@/components/ui/Button'
 import { ThemeToggle } from '@/components/ThemeToggle'
+import { apiClient } from '@/lib/api'
+import { formatCurrency } from '@/lib/utils'
+
+interface AlertItem {
+  budget_id: number
+  budget_name: string
+  spent: number
+  budget_amount: number
+  percentage: number
+  alert_type: string
+}
 
 export default function Navbar() {
   const pathname = usePathname()
   const router = useRouter()
   const [isAuthed, setIsAuthed] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [alerts, setAlerts] = useState<AlertItem[]>([])
+  const [notificationsOpen, setNotificationsOpen] = useState(false)
+  const notificationsRef = useRef<HTMLDivElement>(null)
 
   const navItems = useMemo(
     () => [
@@ -36,6 +50,21 @@ export default function Navbar() {
   useEffect(() => {
     setMobileMenuOpen(false)
   }, [pathname])
+
+  useEffect(() => {
+    if (!isAuthed) return
+    apiClient.getAlerts().then(setAlerts).catch(() => setAlerts([]))
+  }, [isAuthed, pathname])
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
+        setNotificationsOpen(false)
+      }
+    }
+    if (notificationsOpen) document.addEventListener('click', handleClickOutside)
+    return () => document.removeEventListener('click', handleClickOutside)
+  }, [notificationsOpen])
 
   const handleLogout = () => {
     localStorage.removeItem('access_token')
@@ -84,6 +113,62 @@ export default function Navbar() {
           </div>
 
           <div className="flex items-center gap-2">
+            {isAuthed && (
+              <div className="relative" ref={notificationsRef}>
+                <button
+                  type="button"
+                  onClick={() => setNotificationsOpen((o) => !o)}
+                  className="relative p-2 rounded-md text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  aria-label={alerts.length > 0 ? `${alerts.length} notifications` : 'Notifications'}
+                  aria-expanded={notificationsOpen}
+                >
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                  </svg>
+                  {alerts.length > 0 && (
+                    <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-medium text-white">
+                      {alerts.length > 9 ? '9+' : alerts.length}
+                    </span>
+                  )}
+                </button>
+                {notificationsOpen && (
+                  <div className="absolute right-0 mt-1 w-72 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg py-2 z-50">
+                    <div className="px-3 py-2 border-b border-gray-100 dark:border-gray-700">
+                      <span className="text-sm font-semibold text-gray-900 dark:text-white">Notifications</span>
+                    </div>
+                    {alerts.length === 0 ? (
+                      <p className="px-3 py-4 text-sm text-gray-500 dark:text-gray-400">No new alerts</p>
+                    ) : (
+                      <ul className="max-h-64 overflow-y-auto">
+                        {alerts.map((a) => (
+                          <li key={a.budget_id}>
+                            <Link
+                              href="/budgets"
+                              onClick={() => setNotificationsOpen(false)}
+                              className="block px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                            >
+                              <span className="font-medium text-gray-900 dark:text-white">{a.budget_name}</span>
+                              <span className={a.alert_type === 'critical' ? ' text-red-600 dark:text-red-400' : ' text-gray-600 dark:text-gray-400'}>
+                                {' '}{formatCurrency(a.spent)} / {formatCurrency(a.budget_amount)} ({Math.round(a.percentage)}%)
+                              </span>
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    {alerts.length > 0 && (
+                      <Link
+                        href="/budgets"
+                        onClick={() => setNotificationsOpen(false)}
+                        className="block px-3 py-2 text-sm font-medium text-primary-600 dark:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 border-t border-gray-100 dark:border-gray-700"
+                      >
+                        View all budgets →
+                      </Link>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
             <ThemeToggle />
             <button
               type="button"
