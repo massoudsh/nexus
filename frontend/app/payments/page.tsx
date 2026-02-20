@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Navbar from '@/components/layout/Navbar'
 import { apiClient, getApiErrorMessage } from '@/lib/api'
+import { fa } from '@/lib/fa'
 
 interface PaymentRow {
   id: number
@@ -112,7 +113,7 @@ export default function PaymentsPage() {
       <Navbar />
       <main className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Payments (ZarinPal)</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{fa.payments.zarinpalTitle}</h1>
           <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
             Request a payment and complete it on ZarinPal. You will be redirected back here after payment.
           </p>
@@ -170,7 +171,7 @@ export default function PaymentsPage() {
             Payment history
           </h2>
           {loading ? (
-            <div className="p-6 text-gray-500 dark:text-gray-400">Loading...</div>
+            <div className="p-6 text-gray-500 dark:text-gray-400">{fa.common.loading}</div>
           ) : payments.length === 0 ? (
             <div className="p-6 text-gray-500 dark:text-gray-400">No payments yet.</div>
           ) : (
@@ -179,10 +180,10 @@ export default function PaymentsPage() {
                 <li key={p.id} className="p-4 flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <p className="font-medium text-gray-900 dark:text-white">
-                      {p.amount_rials.toLocaleString('fa-IR')} Rials
+                      {new Intl.NumberFormat('fa-IR').format(Number(p.amount_rials))} ریال
                     </p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {p.description || '—'} · {p.created_at ? new Date(p.created_at).toLocaleDateString() : ''}
+                      {p.description || '—'} · {p.created_at ? new Date(p.created_at).toLocaleDateString('fa-IR', { year: 'numeric', month: 'short', day: 'numeric' }) : ''}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -240,7 +241,7 @@ export default function PaymentsPage() {
 
         <p className="mt-6 text-sm text-gray-500 dark:text-gray-400">
           <Link href="/dashboard" className="text-primary-600 dark:text-primary-400 hover:underline">
-            Back to dashboard
+            {fa.payments.backToDashboard}
           </Link>
         </p>
       </main>

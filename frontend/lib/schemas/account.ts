@@ -13,7 +13,7 @@ export const AccountSchema = z.object({
   name: z.string(),
   account_type: z.string(),
   balance: z.number(),
-  currency: z.string().default('USD'),
+  currency: z.string().default('IRT'),
   description: z.string().nullable().optional(),
   is_active: z.boolean().optional(),
 })
@@ -29,7 +29,7 @@ export const AccountCreateSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
   account_type: accountTypeEnum,
   balance: z.number().default(0),
-  currency: z.string().length(3).default('USD'),
+  currency: z.string().length(3).default('IRT'),
   description: z.string().max(500).optional().nullable(),
 })
 export type AccountCreate = z.infer<typeof AccountCreateSchema>
@@ -38,7 +38,7 @@ export const AccountUpdateSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   account_type: accountTypeEnum.optional(),
   balance: z.number().optional(),
-  currency: z.string().length(3).optional(),
+  currency: z.string().length(3).optional(), // IRT = Toman
   description: z.string().max(500).optional().nullable(),
   is_active: z.boolean().optional(),
 })

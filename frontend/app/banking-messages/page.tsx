@@ -170,7 +170,7 @@ export default function BankingMessagesPage() {
                 {parsed.date && (
                   <>
                     <dt className="text-gray-500">Date</dt>
-                    <dd>{new Date(parsed.date).toLocaleDateString()}</dd>
+                    <dd>{new Date(parsed.date).toLocaleDateString('fa-IR', { year: 'numeric', month: 'long', day: 'numeric' })}</dd>
                   </>
                 )}
                 {parsed.description && (

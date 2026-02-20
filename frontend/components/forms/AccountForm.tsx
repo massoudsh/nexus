@@ -29,7 +29,7 @@ export default function AccountForm({ account, onSuccess, onCancel }: AccountFor
     name: account?.name ?? '',
     account_type: account?.account_type ?? 'checking',
     balance: account?.balance ?? 0,
-    currency: account?.currency ?? 'USD',
+    currency: account?.currency ?? 'IRT',
     description: account?.description ?? '',
   })
 
@@ -38,7 +38,7 @@ export default function AccountForm({ account, onSuccess, onCancel }: AccountFor
       name: account?.name ?? '',
       account_type: account?.account_type ?? 'checking',
       balance: account?.balance ?? 0,
-      currency: account?.currency ?? 'USD',
+      currency: account?.currency ?? 'IRT',
       description: account?.description ?? '',
     })
   }, [account])
@@ -155,7 +155,7 @@ export default function AccountForm({ account, onSuccess, onCancel }: AccountFor
           name="currency"
           type="text"
           maxLength={3}
-          placeholder="USD"
+          placeholder="IRT"
           className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm uppercase"
           value={formData.currency}
           onChange={handleChange}

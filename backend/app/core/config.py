@@ -34,7 +34,16 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     
     # CORS: set CORS_ORIGINS in production (comma-separated: https://app.com,https://www.app.com)
-    CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:3001"]
+    CORS_ORIGINS: list[str] = [
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:3002",
+        "http://localhost:3003",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:3001",
+        "http://127.0.0.1:3002",
+        "http://127.0.0.1:3003",
+    ]
     
     # API
     API_V1_STR: str = "/api/v1"
@@ -56,7 +65,10 @@ class Settings(BaseSettings):
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
     def parse_cors_origins(cls, v: Union[str, list]) -> list[str]:
-        return _parse_cors_origins(v) if v is not None else ["http://localhost:3000", "http://localhost:3001"]
+        return _parse_cors_origins(v) if v is not None else [
+        "http://localhost:3000", "http://localhost:3001", "http://localhost:3002", "http://localhost:3003",
+        "http://127.0.0.1:3000", "http://127.0.0.1:3001", "http://127.0.0.1:3002", "http://127.0.0.1:3003",
+    ]
     
     class Config:
         env_file = ".env"

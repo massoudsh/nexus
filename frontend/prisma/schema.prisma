@@ -1,0 +1,322 @@
+// Nexus – Prisma schema for PostgreSQL (mock/seed and server-side logic).
+// Use a separate DB (e.g. nexus_prisma) to avoid clashing with FastAPI backend.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("PRISMA_DATABASE_URL")
+}
+
+enum AccountType {
+  checking
+  savings
+  credit_card
+  investment
+  loan
+  other
+}
+
+enum TransactionType {
+  income
+  expense
+  transfer
+}
+
+enum BudgetPeriod {
+  weekly
+  monthly
+  yearly
+}
+
+enum GoalType {
+  savings
+  debt_payoff
+  purchase
+  emergency_fund
+  other
+}
+
+enum GoalStatus {
+  active
+  completed
+  paused
+  cancelled
+}
+
+enum RecurrenceFrequency {
+  weekly
+  monthly
+  yearly
+}
+
+enum DepositFrequency {
+  weekly
+  biweekly
+  monthly
+}
+
+enum JuniorGoalStatus {
+  pending_approval
+  active
+  completed
+  cancelled
+}
+
+enum RewardType {
+  first_save
+  first_goal
+  five_goals
+  ten_percent
+  halfway
+  goal_achiever
+  consistent_saver
+  custom
+}
+
+model User {
+  id             Int       @id @default(autoincrement())
+  email          String    @unique
+  username       String    @unique
+  hashed_password String
+  full_name      String?
+  is_active      Boolean   @default(true)
+  is_superuser   Boolean   @default(false)
+  created_at     DateTime  @default(now())
+  updated_at     DateTime? @updatedAt
+
+  accounts            Account[]
+  transactions        Transaction[]
+  budgets             Budget[]
+  goals               Goal[]
+  junior_profiles     JuniorProfile[]
+  banking_messages   BankingMessage[]
+  payments            Payment[]
+  recurring_transactions RecurringTransaction[]
+
+  @@map("users")
+}
+
+model Category {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  color       String?
+  icon        String?
+  created_at  DateTime @default(now())
+
+  transactions     Transaction[]
+  budgets          Budget[]
+  banking_messages BankingMessage[] @relation("SuggestedCategory")
+  recurring_transactions RecurringTransaction[]
+
+  @@map("categories")
+}
+
+model Account {
+  id           Int      @id @default(autoincrement())
+  user_id      Int
+  name         String
+  account_type AccountType
+  balance      Decimal  @default(0) @db.Decimal(10, 2)
+  currency     String   @default("USD")
+  description  String?
+  is_active    Boolean  @default(true)
+  created_at   DateTime @default(now())
+  updated_at   DateTime? @updatedAt
+
+  user                  User                 @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  transactions          Transaction[]
+  recurring_transactions RecurringTransaction[]
+  automated_deposits_out AutomatedDeposit[]
+
+  @@map("accounts")
+}
+
+model Transaction {
+  id               Int             @id @default(autoincrement())
+  user_id          Int
+  account_id       Int
+  category_id      Int?
+  amount           Decimal         @db.Decimal(10, 2)
+  transaction_type TransactionType
+  description      String?
+  date             DateTime
+  notes            String?
+  created_at       DateTime        @default(now())
+  updated_at       DateTime?       @updatedAt
+
+  user            User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  account         Account   @relation(fields: [account_id], references: [id], onDelete: Cascade)
+  category        Category? @relation(fields: [category_id], references: [id])
+  banking_messages BankingMessage[]
+
+  @@map("transactions")
+}
+
+model Budget {
+  id          Int          @id @default(autoincrement())
+  user_id     Int
+  category_id Int?
+  name        String
+  amount      Decimal      @db.Decimal(10, 2)
+  period      BudgetPeriod @default(monthly)
+  start_date  DateTime     @db.Date
+  end_date    DateTime?    @db.Date
+  is_active   Boolean      @default(true)
+  created_at  DateTime     @default(now())
+  updated_at  DateTime?    @updatedAt
+
+  user     User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  category Category? @relation(fields: [category_id], references: [id])
+
+  @@map("budgets")
+}
+
+model Goal {
+  id             Int        @id @default(autoincrement())
+  user_id        Int
+  name           String
+  description    String?
+  goal_type      GoalType
+  target_amount  Decimal    @db.Decimal(10, 2)
+  current_amount Decimal    @default(0) @db.Decimal(10, 2)
+  target_date    DateTime?  @db.Date
+  status         GoalStatus @default(active)
+  created_at     DateTime   @default(now())
+  updated_at     DateTime?  @updatedAt
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("goals")
+}
+
+model JuniorProfile {
+  id               Int       @id @default(autoincrement())
+  parent_id        Int
+  name             String
+  balance          Decimal   @default(0) @db.Decimal(10, 2)
+  currency         String    @default("USD")
+  allowance_amount Decimal?  @db.Decimal(10, 2)
+  birth_date       DateTime? @db.Date
+  avatar_url       String?
+  is_active        Boolean   @default(true)
+  created_at       DateTime  @default(now())
+  updated_at       DateTime? @updatedAt
+
+  parent            User             @relation(fields: [parent_id], references: [id], onDelete: Cascade)
+  goals             JuniorGoal[]
+  automated_deposits AutomatedDeposit[]
+  rewards           Reward[]
+
+  @@map("junior_profiles")
+}
+
+model JuniorGoal {
+  id                Int              @id @default(autoincrement())
+  junior_profile_id Int
+  name              String
+  target_amount     Decimal          @db.Decimal(10, 2)
+  current_amount    Decimal          @default(0) @db.Decimal(10, 2)
+  target_date       DateTime?        @db.Date
+  status            JuniorGoalStatus @default(pending_approval)
+  parent_approved   Boolean          @default(false)
+  created_at        DateTime         @default(now())
+  updated_at        DateTime?        @updatedAt
+
+  junior_profile JuniorProfile @relation(fields: [junior_profile_id], references: [id], onDelete: Cascade)
+
+  @@map("junior_goals")
+}
+
+model AutomatedDeposit {
+  id                Int               @id @default(autoincrement())
+  source_account_id Int
+  junior_profile_id Int
+  amount            Decimal           @db.Decimal(10, 2)
+  frequency         DepositFrequency
+  next_run_date     DateTime          @db.Date
+  last_run_at       DateTime?
+  is_active         Boolean           @default(true)
+  created_at        DateTime          @default(now())
+  updated_at        DateTime?         @updatedAt
+
+  source_account  Account       @relation(fields: [source_account_id], references: [id], onDelete: Cascade)
+  junior_profile  JuniorProfile @relation(fields: [junior_profile_id], references: [id], onDelete: Cascade)
+
+  @@map("automated_deposits")
+}
+
+model Reward {
+  id                Int        @id @default(autoincrement())
+  junior_profile_id Int
+  reward_type       RewardType
+  title             String?
+  achieved_at       DateTime   @default(now())
+  created_at        DateTime   @default(now())
+
+  junior_profile JuniorProfile @relation(fields: [junior_profile_id], references: [id], onDelete: Cascade)
+
+  @@map("rewards")
+}
+
+model BankingMessage {
+  id                    Int       @id @default(autoincrement())
+  user_id               Int
+  raw_text              String
+  source                String?
+  parsed_amount         Decimal?  @db.Decimal(10, 2)
+  parsed_date           DateTime?
+  parsed_description    String?
+  parsed_type           String?
+  suggested_category_id Int?
+  transaction_id        Int?
+  created_at            DateTime  @default(now())
+
+  user               User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  suggested_category Category?   @relation("SuggestedCategory", fields: [suggested_category_id], references: [id])
+  transaction        Transaction? @relation(fields: [transaction_id], references: [id])
+
+  @@map("banking_messages")
+}
+
+model Payment {
+  id           Int      @id @default(autoincrement())
+  user_id      Int
+  amount_rials  Decimal  @db.Decimal(14, 0)
+  description  String?
+  authority    String?
+  status       String   @default("pending")
+  ref_id       String?
+  gateway      String   @default("zarinpal")
+  extra_data   String?
+  created_at   DateTime @default(now())
+  updated_at   DateTime? @updatedAt
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+model RecurringTransaction {
+  id            Int                 @id @default(autoincrement())
+  user_id       Int
+  account_id    Int
+  category_id    Int?
+  amount        Decimal             @db.Decimal(10, 2)
+  transaction_type String
+  description   String?
+  frequency     RecurrenceFrequency
+  next_run_date DateTime            @db.Date
+  is_active     Int                 @default(1)
+  created_at    DateTime            @default(now())
+  updated_at    DateTime?           @updatedAt
+
+  user     User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  account  Account  @relation(fields: [account_id], references: [id], onDelete: Cascade)
+  category Category? @relation(fields: [category_id], references: [id])
+
+  @@map("recurring_transactions")
+}

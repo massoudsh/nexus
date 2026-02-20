@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Navbar from '@/components/layout/Navbar'
 import { apiClient, getApiErrorMessage } from '@/lib/api'
 import { formatCurrency } from '@/lib/utils'
+import { fa } from '@/lib/fa'
 
 interface RecurringRow {
   id: number
@@ -78,7 +79,7 @@ export default function RecurringPage() {
   }
 
   async function handleDelete(id: number) {
-    if (!confirm('Remove this recurring transaction?')) return
+    if (!confirm(fa.recurring.removeConfirm)) return
     try {
       await apiClient.deleteRecurring(id)
       load()
@@ -87,21 +88,21 @@ export default function RecurringPage() {
     }
   }
 
-  const accountName = (id: number) => accounts.find((a) => a.id === id)?.name ?? `Account ${id}`
+  const accountName = (id: number) => accounts.find((a) => a.id === id)?.name ?? `${fa.recurring.account} ${id}`
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-100/80 dark:bg-gray-950">
       <Navbar />
       <main className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Recurring transactions</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{fa.recurring.title}</h1>
           <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-            Schedule income or expenses (e.g. monthly rent, salary). Next run date is for display; auto-creation can be added later.
+            {fa.recurring.scheduleDescription}
           </p>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Add recurring</h2>
+        <div className="card p-6 mb-8">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{fa.recurring.addRecurring}</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-md text-sm">
@@ -110,21 +111,21 @@ export default function RecurringPage() {
             )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Account</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{fa.recurring.account}</label>
                 <select
                   required
                   value={form.account_id}
                   onChange={(e) => setForm((f) => ({ ...f, account_id: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 >
-                  <option value="">Select</option>
+                  <option value="">{fa.recurring.select}</option>
                   {accounts.map((a) => (
                     <option key={a.id} value={a.id}>{a.name}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Amount</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{fa.recurring.amount}</label>
                 <input
                   type="number"
                   step="0.01"
@@ -132,82 +133,82 @@ export default function RecurringPage() {
                   required
                   value={form.amount}
                   onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{fa.recurring.type}</label>
                 <select
                   value={form.transaction_type}
                   onChange={(e) => setForm((f) => ({ ...f, transaction_type: e.target.value as 'income' | 'expense' }))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 >
-                  <option value="expense">Expense</option>
-                  <option value="income">Income</option>
+                  <option value="expense">{fa.recurring.expense}</option>
+                  <option value="income">{fa.recurring.income}</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Frequency</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{fa.recurring.frequency}</label>
                 <select
                   value={form.frequency}
                   onChange={(e) => setForm((f) => ({ ...f, frequency: e.target.value as 'weekly' | 'monthly' | 'yearly' }))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 >
-                  <option value="weekly">Weekly</option>
-                  <option value="monthly">Monthly</option>
-                  <option value="yearly">Yearly</option>
+                  <option value="weekly">{fa.recurring.weekly}</option>
+                  <option value="monthly">{fa.recurring.monthly}</option>
+                  <option value="yearly">{fa.recurring.yearly}</option>
                 </select>
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Next run date</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{fa.recurring.nextRunDate}</label>
               <input
                 type="date"
                 value={form.next_run_date}
                 onChange={(e) => setForm((f) => ({ ...f, next_run_date: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description (optional)</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{fa.recurring.descriptionOptional}</label>
               <input
                 type="text"
                 value={form.description}
                 onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                placeholder="e.g. Rent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                placeholder="مثلاً اجاره"
               />
             </div>
             <button
               type="submit"
               disabled={saving}
-              className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 text-sm font-medium"
+              className="px-4 py-2.5 bg-primary-500 text-white rounded-xl hover:bg-primary-600 disabled:opacity-50 text-sm font-medium"
             >
-              {saving ? 'Adding...' : 'Add recurring'}
+              {saving ? fa.recurring.addingRecurring : fa.recurring.addRecurring}
             </button>
           </form>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="card overflow-hidden">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white p-4 border-b border-gray-200 dark:border-gray-700">
-            Scheduled
+            {fa.recurring.scheduled}
           </h2>
           {loading ? (
-            <div className="p-6 text-gray-500 dark:text-gray-400">Loading...</div>
+            <div className="p-6 text-gray-500 dark:text-gray-400">{fa.common.loading}</div>
           ) : list.length === 0 ? (
-            <div className="p-6 text-gray-500 dark:text-gray-400">No recurring transactions yet. Add one above.</div>
+            <div className="p-6 text-gray-500 dark:text-gray-400">{fa.recurring.noRecurringYet} {fa.recurring.addOneAbove}</div>
           ) : (
             <ul className="divide-y divide-gray-200 dark:divide-gray-700">
               {list.map((r) => (
                 <li key={r.id} className="p-4 flex items-center justify-between">
                   <div>
                     <p className="font-medium text-gray-900 dark:text-white">
-                      {r.description || 'Recurring'} · {formatCurrency(r.amount)} ({r.frequency})
+                      {r.description || fa.recurring.addRecurring} · {formatCurrency(r.amount)} ({r.frequency === 'weekly' ? fa.recurring.weekly : r.frequency === 'monthly' ? fa.recurring.monthly : fa.recurring.yearly})
                     </p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {accountName(r.account_id)} · Next: {r.next_run_date} · {r.transaction_type}
+                      {accountName(r.account_id)} · {fa.recurring.nextRunDate}: {r.next_run_date} · {r.transaction_type === 'income' ? fa.recurring.income : fa.recurring.expense}
                     </p>
                   </div>
                   <button
@@ -215,7 +216,7 @@ export default function RecurringPage() {
                     onClick={() => handleDelete(r.id)}
                     className="text-sm text-red-600 dark:text-red-400 hover:underline"
                   >
-                    Remove
+                    {fa.recurring.remove}
                   </button>
                 </li>
               ))}
@@ -225,7 +226,7 @@ export default function RecurringPage() {
 
         <p className="mt-6 text-sm text-gray-500 dark:text-gray-400">
           <Link href="/dashboard" className="text-primary-600 dark:text-primary-400 hover:underline">
-            Back to dashboard
+            {fa.recurring.backToDashboard}
           </Link>
         </p>
       </main>

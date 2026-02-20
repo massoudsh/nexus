@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { apiClient, getApiErrorMessage } from '@/lib/api'
+import { fa } from '@/lib/fa'
 
 export default function ForgotPasswordPage() {
   const router = useRouter()
@@ -38,11 +39,10 @@ export default function ForgotPasswordPage() {
               <span className="font-semibold text-gray-900 dark:text-white">Nexus</span>
             </Link>
             <h2 className="text-center text-xl font-bold text-gray-900 dark:text-white">
-              Check your email
+              {fa.auth.checkYourEmail}
             </h2>
             <p className="text-center text-sm text-gray-600 dark:text-gray-400">
-              If an account exists with this email, you will receive reset instructions.
-              In development, the reset link is logged on the server console.
+              {fa.auth.resetEmailMessage}
             </p>
           </div>
           <div className="flex flex-col gap-2">
@@ -50,7 +50,7 @@ export default function ForgotPasswordPage() {
               href="/login"
               className="text-center text-sm text-primary-600 dark:text-primary-400 hover:underline"
             >
-              Back to sign in
+              {fa.auth.backToSignIn}
             </Link>
           </div>
         </div>
@@ -59,20 +59,20 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-md w-full space-y-8 p-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100/80 dark:bg-gray-950 p-4">
+      <div className="max-w-md w-full space-y-8 p-8 card-elevated">
         <div className="flex flex-col items-center gap-3">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="h-10 w-10 rounded-lg bg-primary-600 text-white flex items-center justify-center font-bold text-sm">
+          <Link href="/" className="flex items-center gap-2.5">
+            <div className="h-11 w-11 rounded-xl bg-primary-500 text-white flex items-center justify-center font-bold text-sm shadow-sm">
               NX
             </div>
-            <span className="font-semibold text-gray-900 dark:text-white">Nexus</span>
+            <span className="font-semibold text-gray-900 dark:text-white">نکسوس</span>
           </Link>
           <h2 className="text-center text-2xl font-bold text-gray-900 dark:text-white">
-            Reset password
+            {fa.auth.forgotPasswordTitle}
           </h2>
           <p className="text-center text-sm text-gray-600 dark:text-gray-400">
-            Enter your email and we’ll send you a link to reset your password.
+            {fa.auth.enterEmailReset}
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -83,7 +83,7 @@ export default function ForgotPasswordPage() {
           )}
           <div>
             <label htmlFor="email" className="sr-only">
-              Email
+              {fa.auth.email}
             </label>
             <input
               id="email"
@@ -91,8 +91,8 @@ export default function ForgotPasswordPage() {
               type="email"
               autoComplete="email"
               required
-              className="appearance-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-              placeholder="Email"
+              className="block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 sm:text-sm"
+              placeholder={fa.auth.email}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
@@ -101,14 +101,14 @@ export default function ForgotPasswordPage() {
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
+              className="w-full flex justify-center py-3 px-4 text-sm font-medium rounded-xl text-white bg-primary-500 hover:bg-primary-600 focus:ring-2 focus:ring-primary-500/30 disabled:opacity-50 transition-colors"
             >
-              {loading ? 'Sending...' : 'Send reset link'}
+              {loading ? fa.auth.sending : fa.auth.sendResetLink}
             </button>
           </div>
           <div className="text-center">
             <Link href="/login" className="text-sm text-primary-600 dark:text-primary-400 hover:underline">
-              Back to sign in
+              {fa.auth.backToSignIn}
             </Link>
           </div>
         </form>

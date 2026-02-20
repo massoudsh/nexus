@@ -2,14 +2,41 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --surface: 255 255 255;
+  --surface-elevated: 255 255 255;
+  --border: 229 231 235;
+  --radius: 0.75rem;
+  --radius-lg: 1rem;
+}
+
+.dark {
+  --surface: 17 24 39;
+  --surface-elevated: 31 41 55;
+  --border: 55 65 81;
+}
+
 @layer base {
   body {
-    @apply bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100;
+    @apply bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 font-dana antialiased;
+  }
+  /* Modern focus ring */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-emerald-500/60 ring-offset-2 ring-offset-gray-50 dark:ring-offset-gray-900;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl border border-gray-200/80 dark:border-gray-700/80 bg-white dark:bg-gray-800/80 shadow-sm;
+  }
+  .card-elevated {
+    @apply rounded-2xl border border-gray-200/80 dark:border-gray-700/80 bg-white dark:bg-gray-800 shadow-lg shadow-gray-200/50 dark:shadow-black/20;
   }
 }
 
 @media print {
-  nav, .print\\:hidden, button.print\\:hidden, [role="navigation"] { display: none !important; }
+  nav, .print\:hidden, button.print\:hidden, [role="navigation"] { display: none !important; }
   body { background: white; color: black; }
   .dark { color: black; background: white; }
 }

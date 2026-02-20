@@ -30,7 +30,7 @@ export function ProtectedRoute({ children, requireAuth = true }: ProtectedRouteP
   if (loading) {
     return (
       <div className="min-h-[40vh] flex items-center justify-center">
-        <div className="animate-pulse text-gray-500">Loading...</div>
+        <div className="animate-pulse text-gray-500 dark:text-gray-400 font-dana">در حال بارگذاری…</div>
       </div>
     )
   }

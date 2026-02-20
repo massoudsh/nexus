@@ -3,6 +3,7 @@
  */
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import { DashboardSummarySchema, type DashboardSummary } from '@/lib/schemas/dashboard'
+import { FounderOverviewSchema, type FounderOverview } from '@/lib/schemas/founder'
 import { AccountsSchema, type Accounts } from '@/lib/schemas/account'
 import {
   ExpensesByCategorySchema,
@@ -373,6 +374,12 @@ class ApiClient {
   async getDashboardSummary() {
     const response = await this.client.get('/dashboard/summary');
     return DashboardSummarySchema.parse(response.data) as DashboardSummary;
+  }
+
+  /** Founder Financial Command Center: KPIs, sparklines, burn intelligence. */
+  async getFounderOverview(): Promise<FounderOverview> {
+    const response = await this.client.get('/dashboard/founder-overview');
+    return FounderOverviewSchema.parse(response.data) as FounderOverview;
   }
 
   // Report endpoints

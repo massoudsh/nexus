@@ -7,6 +7,7 @@ import Navbar from '@/components/layout/Navbar'
 import TransactionForm from '@/components/forms/TransactionForm'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { fa } from '@/lib/fa'
 import type { Account } from '@/lib/schemas/account'
 import type { Transaction } from '@/lib/schemas/transaction'
 import type { CategoryOption } from '@/components/forms/TransactionForm'
@@ -112,56 +113,56 @@ export default function TransactionsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-100/80 dark:bg-gray-950">
       <Navbar />
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Transactions</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{fa.transactions.title}</h2>
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() => setImportOpen(true)}
-                className="px-4 py-2 rounded-md border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                className="px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
               >
-                Import CSV
+                {fa.transactions.importCsv}
               </button>
               <button
                 type="button"
                 onClick={openCreate}
-                className="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 font-medium"
+                className="bg-primary-500 text-white px-4 py-2.5 rounded-xl hover:bg-primary-600 font-medium text-sm shadow-sm"
               >
-                Add Transaction
+                {fa.transactions.addTransaction}
               </button>
             </div>
           </div>
 
           {loading ? (
-            <div className="text-center py-12 text-gray-500 dark:text-gray-400">Loading...</div>
+            <div className="text-center py-12 text-gray-500 dark:text-gray-400">{fa.common.loading}</div>
           ) : transactions.length === 0 ? (
             <EmptyState
-              title="No transactions yet"
-              description="Add a transaction, import from CSV, or paste a bank SMS in Banking to get started."
-              actionLabel="Add transaction"
+              title={fa.dashboard.noTransactionsYet}
+              description={fa.transactions.addTransactionDesc}
+              actionLabel={fa.transactions.addTransaction}
               onAction={openCreate}
             />
           ) : (
-            <div className="bg-white shadow overflow-hidden sm:rounded-md">
-              <ul className="divide-y divide-gray-200">
+            <div className="card overflow-hidden">
+              <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                 {transactions.map((transaction) => (
                   <li key={transaction.id} className="px-6 py-4">
                     <div className="flex items-center justify-between gap-4">
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900">
-                          {transaction.description || 'No description'}
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                          {transaction.description || fa.transactions.noDescription}
                         </p>
-                        <p className="text-sm text-gray-500">{formatDate(transaction.date)}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{formatDate(transaction.date)}</p>
                       </div>
                       <div className="flex items-center gap-3">
                         <span
                           className={`text-sm font-medium ${
-                            transaction.transaction_type === 'income' ? 'text-green-600' : 'text-red-600'
+                            transaction.transaction_type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                           }`}
                         >
                           {transaction.transaction_type === 'income' ? '+' : '-'}
@@ -170,17 +171,17 @@ export default function TransactionsPage() {
                         <button
                           type="button"
                           onClick={() => openEdit(transaction)}
-                          className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+                          className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 font-medium"
                         >
-                          Edit
+                          {fa.common.edit}
                         </button>
                         <button
                           type="button"
                           onClick={() => handleDeleteClick(transaction)}
                           disabled={deletingId === transaction.id}
-                          className="text-sm text-red-600 hover:text-red-700 font-medium disabled:opacity-50"
+                          className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 font-medium disabled:opacity-50"
                         >
-                          {deletingId === transaction.id ? 'Deleting...' : 'Delete'}
+                          {deletingId === transaction.id ? fa.common.deleting : fa.common.delete}
                         </button>
                       </div>
                     </div>
@@ -194,17 +195,16 @@ export default function TransactionsPage() {
 
       <ConfirmDialog
         open={!!confirmDelete}
-        title="Delete transaction?"
-        message={confirmDelete ? 'This transaction will be removed. Account balance will be updated. This cannot be undone.' : ''}
-        confirmLabel="Delete"
+        title={fa.confirm.deleteTransaction}
+        message={confirmDelete ? fa.confirm.deleteTransactionMessage : ''}
         onConfirm={handleDeleteConfirm}
         onCancel={() => setConfirmDelete(null)}
       />
       {formOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" aria-modal="true" role="dialog">
-          <div className="bg-white rounded-xl shadow-lg max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              {editingTransaction ? 'Edit transaction' : 'New transaction'}
+          <div className="card-elevated max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              {editingTransaction ? fa.transactions.editTransaction : fa.transactions.newTransaction}
             </h3>
             <TransactionForm
               accounts={accounts}

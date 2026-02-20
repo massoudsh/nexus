@@ -7,6 +7,7 @@ import Navbar from '@/components/layout/Navbar'
 import AccountForm from '@/components/forms/AccountForm'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { fa } from '@/lib/fa'
 import type { Account } from '@/lib/schemas/account'
 
 export default function AccountsPage() {
@@ -61,59 +62,59 @@ export default function AccountsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-100/80 dark:bg-gray-950">
       <Navbar />
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Accounts</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{fa.accounts.title}</h2>
             <button
               type="button"
               onClick={openCreate}
-              className="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 font-medium"
+              className="bg-primary-500 text-white px-4 py-2.5 rounded-xl hover:bg-primary-600 font-medium text-sm shadow-sm"
             >
-              Add Account
+              {fa.accounts.addAccount}
             </button>
           </div>
 
           {loading ? (
-            <div className="text-center py-12 text-gray-500 dark:text-gray-400">Loading...</div>
+            <div className="text-center py-12 text-gray-500 dark:text-gray-400">{fa.common.loading}</div>
           ) : accounts.length === 0 ? (
             <EmptyState
-              title="No accounts yet"
-              description="Add your first account to start tracking balances and transactions."
-              actionLabel="Add account"
+              title={fa.dashboard.noAccountsYet}
+              description={fa.accounts.addFirstDescription}
+              actionLabel={fa.accounts.addAccount}
               onAction={openCreate}
             />
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {accounts.map((account) => (
-                <div key={account.id} className="bg-white shadow rounded-lg p-6">
+                <div key={account.id} className="card p-6">
                   <div className="flex justify-between items-start">
                     <div>
-                      <h3 className="text-lg font-medium text-gray-900">{account.name}</h3>
-                      <p className="text-sm text-gray-500 capitalize">{account.account_type.replace('_', ' ')}</p>
-                      <p className="text-2xl font-bold text-gray-900 mt-4">{formatCurrency(account.balance, account.currency)}</p>
+                      <h3 className="text-lg font-medium text-gray-900 dark:text-white">{account.name}</h3>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">{account.account_type.replace('_', ' ')}</p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white mt-4">{formatCurrency(account.balance, account.currency)}</p>
                       {account.description && (
-                        <p className="text-sm text-gray-500 mt-2">{account.description}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{account.description}</p>
                       )}
                     </div>
                     <div className="flex gap-2">
                       <button
                         type="button"
                         onClick={() => openEdit(account)}
-                        className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+                        className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium"
                       >
-                        Edit
+                        {fa.common.edit}
                       </button>
                       <button
                         type="button"
                         onClick={() => handleDeleteClick(account)}
                         disabled={deletingId === account.id}
-                        className="text-sm text-red-600 hover:text-red-700 font-medium disabled:opacity-50"
+                        className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 font-medium disabled:opacity-50"
                       >
-                        {deletingId === account.id ? 'Deleting...' : 'Delete'}
+                        {deletingId === account.id ? fa.common.deleting : fa.common.delete}
                       </button>
                     </div>
                   </div>
@@ -126,17 +127,16 @@ export default function AccountsPage() {
 
       <ConfirmDialog
         open={!!confirmDelete}
-        title="Delete account?"
-        message={confirmDelete ? `"${confirmDelete.name}" and its transaction history will be affected. This cannot be undone.` : ''}
-        confirmLabel="Delete"
+        title={fa.confirm.deleteAccount}
+        message={confirmDelete ? `"${confirmDelete.name}" — ${fa.confirm.deleteAccountMessage}` : ''}
         onConfirm={handleDeleteConfirm}
         onCancel={() => setConfirmDelete(null)}
       />
       {formOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" aria-modal="true" role="dialog">
-          <div className="bg-white rounded-xl shadow-lg max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              {editingAccount ? 'Edit account' : 'New account'}
+          <div className="card-elevated max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              {editingAccount ? fa.accounts.editAccount : fa.accounts.newAccount}
             </h3>
             <AccountForm
               account={editingAccount}

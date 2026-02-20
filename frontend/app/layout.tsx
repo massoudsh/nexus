@@ -4,12 +4,12 @@ import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { ClientProviders } from '@/components/ClientProviders'
 
 export const metadata: Metadata = {
-  title: { default: 'Nexus', template: '%s | Nexus' },
-  description: 'Personal finance, simplified. Track accounts, transactions, budgets, and goals in one place.',
-  applicationName: 'Nexus',
+  title: { default: 'نکسوس', template: '%s | نکسوس' },
+  description: 'هوش مالی لحظه‌ای برای اپراتورهای استارتاپ. نقد، سوخت، مدت دوام، ARR/MRR — آماده برای سرمایه‌گذار.',
+  applicationName: 'نکسوس',
   openGraph: {
-    title: 'Nexus — Personal finance, simplified',
-    description: 'Track accounts, transactions, budgets, and goals in one place.',
+    title: 'نکسوس — هوش مالی لحظه‌ای برای استارتاپ‌ها',
+    description: 'داده‌های نقد، سوخت و مدت دوام را به‌صورت لحظه‌ای ببینید.',
     type: 'website',
   },
 }
@@ -20,20 +20,21 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="fa" dir="rtl" suppressHydrationWarning>
       <head>
+        <link href="https://fonts.cdnfonts.com/css/dana" rel="stylesheet" />
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){var t=localStorage.getItem('nexus-theme');var r=t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.add(r?'dark':'light');})();`,
           }}
         />
       </head>
-      <body>
+      <body className="font-dana">
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary-600 focus:text-white focus:rounded-md"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:right-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary-600 focus:text-white focus:rounded-md"
         >
-          Skip to main content
+          پرش به محتوای اصلی
         </a>
         <ErrorBoundary>
           <ClientProviders>{children}</ClientProviders>

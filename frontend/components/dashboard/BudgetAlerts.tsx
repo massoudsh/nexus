@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { apiClient } from '@/lib/api'
-import { formatCurrency } from '@/lib/utils'
+import { formatCurrency, formatNumber } from '@/lib/utils'
 import Link from 'next/link'
 
 interface AlertItem {
@@ -38,7 +38,7 @@ export function BudgetAlerts() {
               {a.budget_name}
             </Link>
             <span className={a.alert_type === 'critical' ? 'text-red-700 font-medium' : 'text-amber-800'}>
-              {formatCurrency(a.spent)} / {formatCurrency(a.budget_amount)} ({Math.round(a.percentage)}%)
+              {formatCurrency(a.spent)} / {formatCurrency(a.budget_amount)} ({formatNumber(Math.round(a.percentage))}٪)
             </span>
           </li>
         ))}

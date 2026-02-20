@@ -7,6 +7,7 @@ import Navbar from '@/components/layout/Navbar'
 import BudgetForm from '@/components/forms/BudgetForm'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { fa } from '@/lib/fa'
 import type { Budget } from '@/lib/schemas/budget'
 
 export default function BudgetsPage() {
@@ -61,29 +62,29 @@ export default function BudgetsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-100/80 dark:bg-gray-950">
       <Navbar />
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Budgets</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{fa.budgets.title}</h2>
             <button
               type="button"
               onClick={openCreate}
-              className="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 font-medium"
+              className="bg-primary-500 text-white px-4 py-2.5 rounded-xl hover:bg-primary-600 font-medium text-sm shadow-sm"
             >
-              Create Budget
+              {fa.budgets.createBudget}
             </button>
           </div>
 
           {loading ? (
-            <div className="text-center py-12 text-gray-500 dark:text-gray-400">Loading...</div>
+            <div className="text-center py-12 text-gray-500 dark:text-gray-400">{fa.common.loading}</div>
           ) : budgets.length === 0 ? (
             <EmptyState
-              title="No budgets yet"
-              description="Create a budget to track spending and get alerts when you approach your limit."
-              actionLabel="Create budget"
+              title={fa.budgets.noBudgetsYet}
+              description={fa.budgets.createBudgetDescription}
+              actionLabel={fa.budgets.createBudget}
               onAction={openCreate}
             />
           ) : (
@@ -96,20 +97,20 @@ export default function BudgetsPage() {
                   ? b.percentage_used
                   : (budget.amount > 0 ? (spent / budget.amount) * 100 : 0)
                 return (
-                  <div key={budget.id} className="bg-white shadow rounded-lg p-6">
+                  <div key={budget.id} className="card p-6">
                     <div className="flex justify-between items-start">
                       <div>
-                        <h3 className="text-lg font-medium text-gray-900">{budget.name}</h3>
-                        <p className="text-sm text-gray-500 capitalize mt-1">{budget.period}</p>
-                        <p className="text-lg font-medium text-gray-900 mt-2">{formatCurrency(budget.amount)} budget</p>
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-white">{budget.name}</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 capitalize mt-1">{budget.period}</p>
+                        <p className="text-lg font-medium text-gray-900 dark:text-white mt-2">{formatCurrency(budget.amount)} {fa.budgets.budget}</p>
                         {typeof spent === 'number' && (
-                          <p className="text-sm text-gray-600 mt-1">
-                            Spent: {formatCurrency(spent)} · Remaining: {formatCurrency(remaining)}
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                            {fa.budgets.spent}: {formatCurrency(spent)} · {fa.budgets.remaining}: {formatCurrency(remaining)}
                           </p>
                         )}
-                        <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
+                        <div className="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                           <div
-                            className={`h-2 rounded-full ${pct > 100 ? 'bg-red-600' : 'bg-primary-600'}`}
+                            className={`h-2 rounded-full ${pct > 100 ? 'bg-red-500' : 'bg-primary-500'}`}
                             style={{ width: `${Math.min(pct, 100)}%` }}
                           />
                         </div>
@@ -118,17 +119,17 @@ export default function BudgetsPage() {
                         <button
                           type="button"
                           onClick={() => openEdit(budget)}
-                          className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+                          className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 font-medium"
                         >
-                          Edit
+                          {fa.common.edit}
                         </button>
                         <button
                           type="button"
                           onClick={() => handleDeleteClick(budget)}
                           disabled={deletingId === budget.id}
-                          className="text-sm text-red-600 hover:text-red-700 font-medium disabled:opacity-50"
+                          className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 font-medium disabled:opacity-50"
                         >
-                          {deletingId === budget.id ? 'Deleting...' : 'Delete'}
+                          {deletingId === budget.id ? fa.common.deleting : fa.common.delete}
                         </button>
                       </div>
                     </div>
@@ -142,17 +143,16 @@ export default function BudgetsPage() {
 
       <ConfirmDialog
         open={!!confirmDelete}
-        title="Delete budget?"
-        message={confirmDelete ? `"${confirmDelete.name}" will be removed. This cannot be undone.` : ''}
-        confirmLabel="Delete"
+        title={fa.confirm.deleteBudget}
+        message={confirmDelete ? `"${confirmDelete.name}" — ${fa.confirm.deleteItemMessage}` : ''}
         onConfirm={handleDeleteConfirm}
         onCancel={() => setConfirmDelete(null)}
       />
       {formOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" aria-modal="true" role="dialog">
-          <div className="bg-white rounded-xl shadow-lg max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              {editingBudget ? 'Edit budget' : 'New budget'}
+          <div className="card-elevated max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              {editingBudget ? fa.budgets.editBudget : fa.budgets.newBudget}
             </h3>
             <BudgetForm
               budget={editingBudget}
