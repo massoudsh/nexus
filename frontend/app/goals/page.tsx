@@ -9,21 +9,27 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { fa } from '@/lib/fa'
 import type { Goal } from '@/lib/schemas/goal'
+import { MOCK_GOALS } from '@/lib/mock-data'
 
 export default function GoalsPage() {
   const [goals, setGoals] = useState<Goal[]>([])
   const [loading, setLoading] = useState(true)
+  const [isMock, setIsMock] = useState(false)
   const [formOpen, setFormOpen] = useState(false)
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null)
   const [deletingId, setDeletingId] = useState<number | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<Goal | null>(null)
 
   const loadGoals = useCallback(async () => {
+    setLoading(true)
+    setIsMock(false)
     try {
       const data = await apiClient.getGoals()
       setGoals(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Failed to load goals:', error)
+      setGoals(MOCK_GOALS as Goal[])
+      setIsMock(true)
     } finally {
       setLoading(false)
     }
@@ -67,8 +73,11 @@ export default function GoalsPage() {
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{fa.goals.title}</h2>
+          <div className="flex justify-between items-center mb-6 flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{fa.goals.title}</h2>
+              {isMock && <span className="text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 px-2 py-1 rounded-full">نمایش نمونه</span>}
+            </div>
             <button
               type="button"
               onClick={openCreate}

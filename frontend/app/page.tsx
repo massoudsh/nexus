@@ -70,6 +70,12 @@ export default function Home() {
                 >
                   {fa.landing.goToDashboard}
                 </Link>
+                <Link
+                  href="/onboarding"
+                  className="inline-flex items-center justify-center px-6 py-3 rounded-lg text-base font-medium text-gray-400 border border-gray-600 hover:border-gray-500 hover:text-white transition"
+                >
+                  {fa.landing.onboardingCta}
+                </Link>
               </div>
             </div>
 

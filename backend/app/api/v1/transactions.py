@@ -21,14 +21,17 @@ router = APIRouter()
 async def get_transactions(
     skip: int = 0,
     limit: int = 100,
-    account_id: Optional[int] = None,
-    category_id: Optional[int] = None,
-    start_date: Optional[datetime] = None,
-    end_date: Optional[datetime] = None,
+    account_id: Optional[int] = Query(None),
+    category_id: Optional[int] = Query(None),
+    start_date: Optional[datetime] = Query(None),
+    end_date: Optional[datetime] = Query(None),
+    q: Optional[str] = Query(None, description="Search in description"),
+    amount_min: Optional[float] = Query(None),
+    amount_max: Optional[float] = Query(None),
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
-    """Get all transactions for the current user with optional filters."""
+    """Get all transactions with optional filters and search."""
     service = TransactionsService(db)
     return service.get_user_transactions(
         current_user.id,
@@ -37,7 +40,10 @@ async def get_transactions(
         account_id=account_id,
         category_id=category_id,
         start_date=start_date,
-        end_date=end_date
+        end_date=end_date,
+        q=q,
+        amount_min=amount_min,
+        amount_max=amount_max,
     )
 
 
@@ -113,12 +119,29 @@ async def get_transaction(
 @router.post("/", response_model=TransactionSchema, status_code=status.HTTP_201_CREATED)
 async def create_transaction(
     transaction_data: TransactionCreate,
+    force: Optional[bool] = Query(False, description="Create even if possible duplicate"),
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
-    """Create a new transaction."""
+    """Create a new transaction. Returns 409 if possible duplicate (use ?force=true to create anyway)."""
     service = TransactionsService(db)
-    return service.create_transaction(transaction_data, current_user.id)
+    try:
+        return service.create_transaction(
+            transaction_data,
+            current_user.id,
+            skip_duplicate_check=force,
+        )
+    except ValueError as e:
+        if len(e.args) >= 2 and e.args[0] == "POSSIBLE_DUPLICATE":
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail={
+                    "code": "possible_duplicate",
+                    "existing_id": e.args[1],
+                    "existing_date": e.args[2] if len(e.args) > 2 else None,
+                },
+            ) from e
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
 
 
 @router.put("/{transaction_id}", response_model=TransactionSchema)

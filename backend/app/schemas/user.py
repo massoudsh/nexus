@@ -1,9 +1,10 @@
 """
 User schemas for request/response validation.
 """
+import json
 import re
 from pydantic import BaseModel, EmailStr, Field, field_validator
-from typing import Optional
+from typing import Optional, Any
 from datetime import datetime
 
 
@@ -36,6 +37,7 @@ class UserUpdate(BaseModel):
     username: Optional[str] = Field(None, min_length=3, max_length=50)
     full_name: Optional[str] = None
     is_active: Optional[bool] = None
+    dashboard_preferences: Optional[dict] = None
 
 
 class UserInDB(UserBase):
@@ -45,13 +47,26 @@ class UserInDB(UserBase):
     is_superuser: bool
     created_at: datetime
     updated_at: Optional[datetime] = None
-    
+    totp_enabled: bool = False
+    dashboard_preferences: Optional[dict] = None
+
+    @field_validator("dashboard_preferences", mode="before")
+    @classmethod
+    def parse_dashboard_prefs(cls, v: Any) -> Optional[dict]:
+        if v is None:
+            return None
+        if isinstance(v, dict):
+            return v
+        if isinstance(v, str):
+            return json.loads(v) if v.strip() else None
+        return None
+
     class Config:
         from_attributes = True
 
 
 class User(UserInDB):
-    """User response schema."""
+    """User response schema (excludes totp_secret; totp_enabled from model property)."""
     pass
 
 
@@ -107,4 +122,27 @@ class ResetPasswordRequest(BaseModel):
 
 class ResetPasswordResponse(BaseModel):
     message: str = "Password has been reset. You can sign in with your new password."
+
+
+class TwoFactorSetupResponse(BaseModel):
+    """2FA setup: secret and provisioning URI for QR."""
+    secret: str
+    provisioning_uri: str
+
+
+class TwoFactorEnableRequest(BaseModel):
+    """Enable 2FA with code from authenticator app."""
+    code: str
+    secret: str
+
+
+class TwoFactorDisableRequest(BaseModel):
+    """Disable 2FA (require password)."""
+    password: str
+
+
+class TwoFactorVerifyLoginRequest(BaseModel):
+    """Verify 2FA code after password login."""
+    temp_token: str
+    code: str
 

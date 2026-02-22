@@ -49,6 +49,7 @@ export default function TransactionForm({ accounts, categories = [], transaction
   const isEdit = Boolean(transaction?.id)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [duplicateDetail, setDuplicateDetail] = useState<{ existing_id: number; existing_date?: string } | null>(null)
   const getInitialState = useCallback(() => {
     const defaultDate = transaction?.date
       ? toDatetimeLocal(transaction.date)
@@ -111,17 +112,54 @@ export default function TransactionForm({ accounts, categories = [], transaction
         await apiClient.updateTransaction(transaction.id, parsed)
       } else {
         const parsed = TransactionCreateSchema.parse(payload) as TransactionCreate
-        await apiClient.createTransaction(parsed)
+        await apiClient.createTransaction(parsed, false)
       }
+      setDuplicateDetail(null)
       onSuccess()
     } catch (err: unknown) {
+      const ax = err as { response?: { status?: number; data?: { detail?: unknown } } }
+      if (ax?.response?.status === 409 && ax.response?.data?.detail && typeof ax.response.data.detail === 'object' && 'existing_id' in (ax.response.data.detail as object)) {
+        const d = ax.response.data.detail as { existing_id: number; existing_date?: string }
+        setDuplicateDetail({ existing_id: d.existing_id, existing_date: d.existing_date })
+        setError('تراکنش مشابه در همین روز و حساب وجود دارد. در صورت اطمینان دکمه «ثبت باز هم» را بزنید.')
+        setLoading(false)
+        return
+      }
       const message =
         err instanceof Error
           ? err.message
-          : typeof (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail === 'string'
-            ? (err as { response: { data: { detail: string } } }).response.data.detail
+          : typeof (ax?.response?.data?.detail === 'string')
+            ? ax.response.data.detail
             : 'Failed to save transaction'
       setError(message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleCreateAnyway = async () => {
+    if (!duplicateDetail) return
+    setError(null)
+    setLoading(true)
+    try {
+      const accountId = Number(formData.account_id)
+      const amount = Number(formData.amount)
+      const dateIso = fromDatetimeLocal(formData.date)
+      const payload = {
+        account_id: accountId,
+        category_id: formData.category_id ? Number(formData.category_id) : null,
+        amount,
+        transaction_type: formData.transaction_type,
+        description: formData.description.trim() || null,
+        date: dateIso,
+        notes: formData.notes.trim() || null,
+      }
+      const parsed = TransactionCreateSchema.parse(payload) as TransactionCreate
+      await apiClient.createTransaction(parsed, true)
+      setDuplicateDetail(null)
+      onSuccess()
+    } catch (err) {
+      setError(typeof (err as Error).message === 'string' ? (err as Error).message : 'Failed to save')
     } finally {
       setLoading(false)
     }
@@ -130,8 +168,15 @@ export default function TransactionForm({ accounts, categories = [], transaction
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
-        <div className="rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700" role="alert">
+        <div className="rounded-md bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-700 dark:text-red-300" role="alert">
           {error}
+          {duplicateDetail && (
+            <div className="mt-2">
+              <button type="button" onClick={handleCreateAnyway} disabled={loading} className="text-sm font-medium underline hover:no-underline">
+                ثبت باز هم
+              </button>
+            </div>
+          )}
         </div>
       )}
       <div>

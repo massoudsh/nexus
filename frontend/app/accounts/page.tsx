@@ -9,21 +9,27 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { fa } from '@/lib/fa'
 import type { Account } from '@/lib/schemas/account'
+import { MOCK_ACCOUNTS } from '@/lib/mock-data'
 
 export default function AccountsPage() {
   const [accounts, setAccounts] = useState<Account[]>([])
   const [loading, setLoading] = useState(true)
+  const [isMock, setIsMock] = useState(false)
   const [formOpen, setFormOpen] = useState(false)
   const [editingAccount, setEditingAccount] = useState<Account | null>(null)
   const [deletingId, setDeletingId] = useState<number | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<Account | null>(null)
 
   const loadAccounts = useCallback(async () => {
+    setLoading(true)
+    setIsMock(false)
     try {
       const data = await apiClient.getAccounts()
-      setAccounts(data)
+      setAccounts(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Failed to load accounts:', error)
+      setAccounts(MOCK_ACCOUNTS as Account[])
+      setIsMock(true)
     } finally {
       setLoading(false)
     }
@@ -67,8 +73,11 @@ export default function AccountsPage() {
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{fa.accounts.title}</h2>
+          <div className="flex justify-between items-center mb-6 flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{fa.accounts.title}</h2>
+              {isMock && <span className="text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 px-2 py-1 rounded-full">نمایش نمونه</span>}
+            </div>
             <button
               type="button"
               onClick={openCreate}

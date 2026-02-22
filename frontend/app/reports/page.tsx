@@ -6,16 +6,23 @@ import { formatCurrency } from '@/lib/utils'
 import Navbar from '@/components/layout/Navbar'
 import { getApiErrorMessage } from '@/lib/api'
 import { fa } from '@/lib/fa'
+import { MOCK_EXPENSES_BY_CATEGORY, MOCK_INCOME_VS_EXPENSES } from '@/lib/mock-data'
 
 export default function ReportsPage() {
   const [expensesByCategory, setExpensesByCategory] = useState<any[]>([])
   const [incomeVsExpenses, setIncomeVsExpenses] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [isMock, setIsMock] = useState(false)
   const [exporting, setExporting] = useState(false)
   const [exportError, setExportError] = useState<string | null>(null)
+  const [insights, setInsights] = useState<{ narrative: string; expense_change_pct: number } | null>(null)
 
   useEffect(() => {
     loadReports()
+  }, [])
+
+  useEffect(() => {
+    apiClient.getSpendingInsights().then((r) => setInsights({ narrative: r.narrative, expense_change_pct: r.expense_change_pct })).catch(() => setInsights(null))
   }, [])
 
   const handleExportTransactions = async () => {
@@ -37,15 +44,20 @@ export default function ReportsPage() {
   }
 
   const loadReports = async () => {
+    setLoading(true)
+    setIsMock(false)
     try {
       const [expenses, incomeExpenses] = await Promise.all([
         apiClient.getExpensesByCategory(),
         apiClient.getIncomeVsExpenses()
       ])
-      setExpensesByCategory(expenses)
+      setExpensesByCategory(Array.isArray(expenses) ? expenses : [])
       setIncomeVsExpenses(incomeExpenses)
     } catch (error) {
       console.error('Failed to load reports:', error)
+      setExpensesByCategory(MOCK_EXPENSES_BY_CATEGORY)
+      setIncomeVsExpenses(MOCK_INCOME_VS_EXPENSES)
+      setIsMock(true)
     } finally {
       setLoading(false)
     }
@@ -57,8 +69,11 @@ export default function ReportsPage() {
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{fa.reports.title}</h2>
+          <div className="flex justify-between items-center mb-6 flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{fa.reports.title}</h2>
+              {isMock && <span className="text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 px-2 py-1 rounded-full">نمایش نمونه</span>}
+            </div>
             <button
               type="button"
               onClick={handleExportTransactions}
@@ -76,6 +91,17 @@ export default function ReportsPage() {
             <div className="text-center py-12 text-gray-500 dark:text-gray-400">{fa.common.loading}</div>
           ) : (
             <div className="space-y-6">
+              {insights && (
+                <div className="card p-6 bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-800">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">بینش هزینه</h3>
+                  <p className="text-gray-700 dark:text-gray-300">{insights.narrative}</p>
+                  {insights.expense_change_pct !== 0 && (
+                    <p className="mt-2 text-sm font-medium text-emerald-700 dark:text-emerald-400">
+                      تغییر نسبت به ماه قبل: {new Intl.NumberFormat('fa-IR', { signDisplay: 'always', maximumFractionDigits: 1 }).format(insights.expense_change_pct)}٪
+                    </p>
+                  )}
+                </div>
+              )}
               {incomeVsExpenses && (
                 <div className="card p-6">
                   <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">{fa.reports.incomeVsExpenses}</h3>

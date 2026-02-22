@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Navbar from '@/components/layout/Navbar'
 import { apiClient, getApiErrorMessage } from '@/lib/api'
 import { fa } from '@/lib/fa'
+import { MOCK_ACCOUNTS, MOCK_PAYMENTS } from '@/lib/mock-data'
 
 interface PaymentRow {
   id: number
@@ -29,6 +30,7 @@ export default function PaymentsPage() {
   const [payments, setPayments] = useState<PaymentRow[]>([])
   const [accounts, setAccounts] = useState<AccountRow[]>([])
   const [loading, setLoading] = useState(true)
+  const [isMock, setIsMock] = useState(false)
   const [requesting, setRequesting] = useState(false)
   const [error, setError] = useState('')
   const [amountRials, setAmountRials] = useState('')
@@ -47,16 +49,19 @@ export default function PaymentsPage() {
       const data = await apiClient.getAccounts()
       setAccounts(Array.isArray(data) ? data : [])
     } catch {
-      setAccounts([])
+      setAccounts(MOCK_ACCOUNTS.map((a) => ({ id: a.id, name: a.name, account_type: a.account_type, balance: a.balance, currency: a.currency })))
     }
   }
 
   async function loadPayments() {
+    setLoading(true)
+    setIsMock(false)
     try {
       const data = await apiClient.getPayments()
       setPayments(Array.isArray(data) ? data : [])
     } catch {
-      setPayments([])
+      setPayments(MOCK_PAYMENTS)
+      setIsMock(true)
     } finally {
       setLoading(false)
     }
@@ -112,9 +117,10 @@ export default function PaymentsPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
       <main className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
+        <div className="mb-8 flex items-center gap-2 flex-wrap">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{fa.payments.zarinpalTitle}</h1>
-          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+          {isMock && <span className="text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 px-2 py-1 rounded-full">نمایش نمونه</span>}
+          <p className="mt-1 w-full text-sm text-gray-600 dark:text-gray-400">
             Request a payment and complete it on ZarinPal. You will be redirected back here after payment.
           </p>
         </div>

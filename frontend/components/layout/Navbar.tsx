@@ -39,6 +39,7 @@ export default function Navbar() {
       { href: '/accounts', label: fa.nav.accounts },
       { href: '/payments', label: fa.nav.payments },
       { href: '/junior', label: fa.nav.junior },
+      { href: '/help', label: fa.settings.help },
     ],
     []
   )
@@ -93,11 +94,11 @@ export default function Navbar() {
             </Link>
 
             <div className="hidden sm:flex items-center gap-1">
-              {navItems.map((item) => {
+              {navItems.map((item, i) => {
                 const active = pathname === item.href
                 return (
                   <Link
-                    key={item.href}
+                    key={`nav-${i}-${item.label}`}
                     href={item.href}
                     className={[
                       'px-3 py-2 rounded-xl text-sm font-medium transition-colors',
@@ -217,11 +218,11 @@ export default function Navbar() {
         {mobileMenuOpen && (
           <div className="sm:hidden border-t border-gray-200 dark:border-gray-700 py-4">
             <div className="flex flex-col gap-1">
-              {navItems.map((item) => {
+              {navItems.map((item, i) => {
                 const active = pathname === item.href
                 return (
                   <Link
-                    key={item.href}
+                    key={`mobile-nav-${i}-${item.label}`}
                     href={item.href}
                     className={[
                       'px-3 py-2 rounded-xl text-sm font-medium transition-colors',

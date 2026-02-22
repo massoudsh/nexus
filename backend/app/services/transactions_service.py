@@ -25,11 +25,13 @@ class TransactionsService:
         account_id: Optional[int] = None,
         category_id: Optional[int] = None,
         start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None
+        end_date: Optional[datetime] = None,
+        q: Optional[str] = None,
+        amount_min: Optional[float] = None,
+        amount_max: Optional[float] = None,
     ) -> List[Transaction]:
-        """Get all transactions for a user with optional filters."""
+        """Get all transactions for a user with optional filters and search."""
         query = self.db.query(Transaction).filter(Transaction.user_id == user_id)
-        
         if account_id:
             query = query.filter(Transaction.account_id == account_id)
         if category_id:
@@ -38,7 +40,13 @@ class TransactionsService:
             query = query.filter(Transaction.date >= start_date)
         if end_date:
             query = query.filter(Transaction.date <= end_date)
-        
+        if q and q.strip():
+            search = f"%{q.strip()}%"
+            query = query.filter(Transaction.description.ilike(search))
+        if amount_min is not None:
+            query = query.filter(Transaction.amount >= amount_min)
+        if amount_max is not None:
+            query = query.filter(Transaction.amount <= amount_max)
         return query.order_by(Transaction.date.desc()).offset(skip).limit(limit).all()
     
     def get_transaction(self, transaction_id: int, user_id: int) -> Optional[Transaction]:
@@ -48,10 +56,35 @@ class TransactionsService:
             Transaction.user_id == user_id
         ).first()
     
+    def check_possible_duplicate(
+        self,
+        user_id: int,
+        account_id: int,
+        amount: Decimal,
+        transaction_date: datetime,
+        window_hours: int = 24,
+    ) -> Optional[Transaction]:
+        """Return an existing transaction if same account, amount, and date within window."""
+        from datetime import timedelta
+        start = transaction_date - timedelta(hours=window_hours)
+        end = transaction_date + timedelta(hours=window_hours)
+        return (
+            self.db.query(Transaction)
+            .filter(
+                Transaction.user_id == user_id,
+                Transaction.account_id == account_id,
+                Transaction.amount == amount,
+                Transaction.date >= start,
+                Transaction.date <= end,
+            )
+            .first()
+        )
+
     def create_transaction(
         self,
         transaction_data: TransactionCreate,
-        user_id: int
+        user_id: int,
+        skip_duplicate_check: bool = False,
     ) -> Transaction:
         """Create a new transaction and update account balance."""
         # Verify account belongs to user
@@ -59,17 +92,24 @@ class TransactionsService:
             Account.id == transaction_data.account_id,
             Account.user_id == user_id
         ).first()
-        
         if not account:
             raise ValueError("Account not found")
-        
+        amount = Decimal(str(transaction_data.amount))
+        if not skip_duplicate_check:
+            existing = self.check_possible_duplicate(
+                user_id,
+                transaction_data.account_id,
+                amount,
+                transaction_data.date,
+            )
+            if existing:
+                raise ValueError("POSSIBLE_DUPLICATE", existing.id, existing.date.isoformat() if hasattr(existing.date, "isoformat") else str(existing.date))
         db_transaction = Transaction(
             **transaction_data.model_dump(),
             user_id=user_id
         )
         
         # Update account balance
-        amount = Decimal(str(transaction_data.amount))
         if transaction_data.transaction_type.value == "income":
             account.balance += amount
         elif transaction_data.transaction_type.value == "expense":

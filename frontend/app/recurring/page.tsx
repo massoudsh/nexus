@@ -6,6 +6,7 @@ import Navbar from '@/components/layout/Navbar'
 import { apiClient, getApiErrorMessage } from '@/lib/api'
 import { formatCurrency } from '@/lib/utils'
 import { fa } from '@/lib/fa'
+import { MOCK_ACCOUNTS, MOCK_RECURRING } from '@/lib/mock-data'
 
 interface RecurringRow {
   id: number
@@ -22,7 +23,9 @@ export default function RecurringPage() {
   const [list, setList] = useState<RecurringRow[]>([])
   const [accounts, setAccounts] = useState<Array<{ id: number; name: string; currency: string }>>([])
   const [loading, setLoading] = useState(true)
+  const [isMock, setIsMock] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [running, setRunning] = useState(false)
   const [error, setError] = useState('')
   const [form, setForm] = useState({
     account_id: '',
@@ -38,13 +41,16 @@ export default function RecurringPage() {
   }, [])
 
   async function load() {
+    setLoading(true)
+    setIsMock(false)
     try {
       const [rec, acc] = await Promise.all([apiClient.getRecurring(), apiClient.getAccounts()])
       setList(Array.isArray(rec) ? rec : [])
-      setAccounts(Array.isArray(acc) ? acc : [])
+      setAccounts(Array.isArray(acc) ? acc.map((a: { id: number; name: string; currency: string }) => ({ id: a.id, name: a.name, currency: a.currency })) : [])
     } catch {
-      setList([])
-      setAccounts([])
+      setList(MOCK_RECURRING as RecurringRow[])
+      setAccounts(MOCK_ACCOUNTS.map((a) => ({ id: a.id, name: a.name, currency: a.currency })))
+      setIsMock(true)
     } finally {
       setLoading(false)
     }
@@ -94,11 +100,34 @@ export default function RecurringPage() {
     <div className="min-h-screen bg-gray-100/80 dark:bg-gray-950">
       <Navbar />
       <main className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{fa.recurring.title}</h1>
-          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-            {fa.recurring.scheduleDescription}
-          </p>
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{fa.recurring.title}</h1>
+            {isMock && <span className="text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 px-2 py-1 rounded-full">نمایش نمونه</span>}
+            <p className="w-full mt-1 text-sm text-gray-600 dark:text-gray-400">
+              {fa.recurring.scheduleDescription}
+            </p>
+          </div>
+          <button
+            type="button"
+            disabled={running}
+            onClick={async () => {
+              setRunning(true)
+              setError('')
+              try {
+                const res = await apiClient.runRecurringNow()
+                if (res.created > 0) await load()
+                alert(`اجرا شد: ${res.created} تراکنش ایجاد شد.`)
+              } catch (err) {
+                setError(getApiErrorMessage(err))
+              } finally {
+                setRunning(false)
+              }
+            }}
+            className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-500 disabled:opacity-50"
+          >
+            {running ? fa.common.loading : 'اجرای اکنون'}
+          </button>
         </div>
 
         <div className="card p-6 mb-8">

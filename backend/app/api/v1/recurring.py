@@ -1,5 +1,5 @@
 """Recurring transactions API."""
-from datetime import date
+from datetime import date, datetime, time as dt_time
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -11,6 +11,9 @@ from app.models.user import User
 from app.models.recurring import RecurringTransaction, RecurrenceFrequency
 from app.models.account import Account
 from app.schemas.recurring import RecurringTransactionCreate, RecurringTransactionUpdate, RecurringTransactionOut
+from app.schemas.transaction import TransactionCreate
+from app.models.transaction import TransactionType
+from app.services.transactions_service import TransactionsService
 
 router = APIRouter()
 
@@ -183,3 +186,48 @@ async def delete_recurring(
         raise HTTPException(status_code=404, detail="Recurring transaction not found")
     db.delete(rec)
     db.commit()
+
+
+@router.post("/run-now")
+async def run_recurring_now(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Process due recurring transactions: create a transaction for each where next_run_date <= today,
+    then advance next_run_date. Idempotent per (recurring_id, next_run_date). Call from cron or manually.
+    """
+    today = date.today()
+    due = (
+        db.query(RecurringTransaction)
+        .filter(
+            RecurringTransaction.user_id == current_user.id,
+            RecurringTransaction.is_active == 1,
+            RecurringTransaction.next_run_date <= today,
+        )
+        .all()
+    )
+    tx_service = TransactionsService(db)
+    created = 0
+    for rec in due:
+        run_date = rec.next_run_date
+        tx_date = datetime.combine(run_date, dt_time.min)
+        try:
+            tx_service.create_transaction(
+                TransactionCreate(
+                    account_id=rec.account_id,
+                    category_id=rec.category_id,
+                    amount=rec.amount,
+                    transaction_type=TransactionType(rec.transaction_type) if isinstance(rec.transaction_type, str) else rec.transaction_type,
+                    description=rec.description or f"Recurring #{rec.id}",
+                    date=tx_date,
+                ),
+                current_user.id,
+                skip_duplicate_check=True,
+            )
+        except Exception:
+            continue
+        rec.next_run_date = _next_run(rec.frequency, run_date)
+        created += 1
+    db.commit()
+    return {"processed": len(due), "created": created}

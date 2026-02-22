@@ -57,9 +57,14 @@ export default function DashboardPage() {
   const [accounts, setAccounts] = useState<Accounts>([])
   const [loading, setLoading] = useState(true)
   const [isGuest, setIsGuest] = useState(false)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [investorMode, setInvestorMode] = useState(false)
   const [chartsOpen, setChartsOpen] = useState(true)
   const [paymentBanner, setPaymentBanner] = useState<{ type: 'success' | 'failed'; message?: string; refId?: string } | null>(null)
+  const [dashboardUser, setDashboardUser] = useState<{ dashboard_preferences?: { widget_ids?: string[] } | null } | null>(null)
+
+  const DEFAULT_WIDGET_IDS = ['kpi', 'burn', 'charts', 'quick_links', 'accounts', 'recent']
+  const widgetIds = (dashboardUser?.dashboard_preferences?.widget_ids?.length ? dashboardUser.dashboard_preferences.widget_ids : DEFAULT_WIDGET_IDS) as string[]
 
   useEffect(() => {
     loadDashboard()
@@ -81,25 +86,39 @@ export default function DashboardPage() {
     }
   }, [searchParams])
 
+  const DASHBOARD_TIMEOUT_MS = 15000
+
   const loadDashboard = async () => {
-    try {
-      const [overview, summaryData, accountsData] = await Promise.all([
-        apiClient.getFounderOverview(),
-        apiClient.getDashboardSummary(),
-        apiClient.getAccounts(),
-      ])
+    setLoading(true)
+    setLoadError(null)
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('TIMEOUT')), DASHBOARD_TIMEOUT_MS)
+    )
+    const [coreResult, userResult] = await Promise.allSettled([
+      Promise.race([
+        Promise.all([
+          apiClient.getFounderOverview(),
+          apiClient.getDashboardSummary(),
+          apiClient.getAccounts(),
+        ]),
+        timeoutPromise,
+      ]),
+      apiClient.getCurrentUser().catch(() => null),
+    ])
+    if (coreResult.status === 'fulfilled') {
+      const [overview, summaryData, accountsData] = coreResult.value
       setFounderOverview(overview)
       setSummary(summaryData)
       setAccounts(accountsData)
-    } catch (error) {
-      console.error('Failed to load dashboard:', error)
-      const status = (error as any)?.response?.status
-      if (status === 401) {
-        setIsGuest(true)
-      }
-    } finally {
-      setLoading(false)
+    } else {
+      const err = coreResult.reason as { message?: string; response?: { status?: number } }
+      console.error('Failed to load dashboard:', err)
+      if (err?.response?.status === 401) setIsGuest(true)
+      else if (err?.message === 'TIMEOUT') setLoadError('timeout')
+      else setLoadError('error')
     }
+    setDashboardUser(userResult.status === 'fulfilled' && userResult.value ? userResult.value : null)
+    setLoading(false)
   }
 
   if (loading) {
@@ -241,20 +260,34 @@ export default function DashboardPage() {
     )
   }
 
-  if (!founderOverview && !isGuest) {
+  if (loadError || (!founderOverview && !isGuest)) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-950 px-4">
-        <p className="text-lg font-medium text-red-400">{fa.dashboard.failedToLoad}</p>
-        <p className="mt-2 text-sm text-gray-400 text-center max-w-md">
-          {fa.dashboard.apiUnreachable}
-        </p>
-        <button
-          type="button"
-          onClick={() => { setLoading(true); loadDashboard().finally(() => setLoading(false)) }}
-          className="mt-4 px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-500 text-sm font-medium"
-        >
-          {fa.common.retry}
-        </button>
+      <div className="min-h-screen bg-gray-950">
+        <Navbar />
+        <main className="min-h-[60vh] flex flex-col items-center justify-center px-4">
+          <p className="text-lg font-medium text-red-400">
+            {loadError === 'timeout' ? 'زمان اتصال به سرور تمام شد.' : fa.dashboard.failedToLoad}
+          </p>
+          <p className="mt-2 text-sm text-gray-400 text-center max-w-md">
+            {fa.dashboard.apiUnreachable}
+          </p>
+          <div className="mt-6 flex gap-3">
+            <button
+              type="button"
+              onClick={() => loadDashboard()}
+              disabled={loading}
+              className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-500 disabled:opacity-50 text-sm font-medium"
+            >
+              {loading ? fa.common.loading : fa.common.retry}
+            </button>
+            <Link
+              href="/onboarding"
+              className="px-4 py-2 rounded-md border border-gray-600 text-gray-300 hover:bg-gray-800 text-sm font-medium"
+            >
+              راهنمای شروع
+            </Link>
+          </div>
+        </main>
       </div>
     )
   }
@@ -306,13 +339,15 @@ export default function DashboardPage() {
             </label>
           </div>
 
-          <KpiStripExact kpis={founderOverview!.kpis} />
+          {widgetIds.includes('kpi') && <KpiStripExact kpis={founderOverview!.kpis} />}
 
-          <div className="mb-6">
-            <BurnIntelligence burn={founderOverview!.burn} />
-          </div>
+          {widgetIds.includes('burn') && (
+            <div className="mb-6">
+              <BurnIntelligence burn={founderOverview!.burn} />
+            </div>
+          )}
 
-          {!investorMode && (
+          {widgetIds.includes('quick_links') && !investorMode && (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6 print:hidden">
               <Link href="/transactions" className="rounded-xl border border-gray-700 bg-gray-800 p-4 text-center hover:bg-gray-700/50 transition">
 <span className="text-sm font-medium text-white">{fa.dashboard.addTransaction}</span>
@@ -333,15 +368,17 @@ export default function DashboardPage() {
             <InvestorExportBar />
           )}
 
-          <button
-            type="button"
-            onClick={() => setChartsOpen((o) => !o)}
-            className="flex items-center gap-2 mb-4 text-sm font-medium text-gray-400 hover:text-white transition"
-          >
-            {fa.dashboard.charts} {chartsOpen ? '^' : '∨'}
-          </button>
-          {chartsOpen && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+          {widgetIds.includes('charts') && (
+            <>
+              <button
+                type="button"
+                onClick={() => setChartsOpen((o) => !o)}
+                className="flex items-center gap-2 mb-4 text-sm font-medium text-gray-400 hover:text-white transition"
+              >
+                {fa.dashboard.charts} {chartsOpen ? '^' : '∨'}
+              </button>
+              {chartsOpen && (
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
               <div className="bg-gray-800/80 rounded-xl border border-gray-700 p-5 lg:col-span-2">
                 <h3 className="text-base font-semibold text-white mb-2">{fa.dashboard.netBurnAndCash}</h3>
                 <NetBurnCashChartExact data={founderOverview!.sparkline_months} cashBalance={cashBalance} />
@@ -357,8 +394,11 @@ export default function DashboardPage() {
                 </div>
               </div>
             </div>
+              )}
+            </>
           )}
 
+          {widgetIds.includes('accounts') || widgetIds.includes('recent') ? (
           <div className="flex items-center justify-between gap-4 mb-4">
             <h2 className="text-lg font-semibold text-white">{fa.dashboard.accountsAndActivity}</h2>
             <div className="flex gap-2 print:hidden">
@@ -375,6 +415,7 @@ export default function DashboardPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {widgetIds.includes('accounts') && (
             <div className="bg-gray-800/80 rounded-xl border border-gray-700 p-5">
               <h3 className="text-base font-semibold text-white mb-4">{fa.nav.accounts}</h3>
               {accounts.length === 0 ? (
@@ -393,6 +434,8 @@ export default function DashboardPage() {
                 </div>
               )}
             </div>
+            )}
+            {widgetIds.includes('recent') && (
             <div className="bg-gray-800/80 rounded-xl border border-gray-700 p-5">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-base font-semibold text-white">{fa.dashboard.recentTransactions}</h3>
@@ -420,7 +463,9 @@ export default function DashboardPage() {
                 </div>
               )}
             </div>
+            )}
           </div>
+          ) : null}
         </div>
       </main>
     </div>

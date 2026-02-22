@@ -123,23 +123,48 @@ class ApiClient {
     return response.data;
   }
 
-  async login(username: string, password: string) {
+  async login(username: string, password: string): Promise<
+    | { access_token: string; refresh_token: string; token_type: string }
+    | { requires_2fa: true; temp_token: string }
+  > {
     const formData = new URLSearchParams();
     formData.append('username', username);
     formData.append('password', password);
-    
     const response = await this.client.post('/auth/login', formData, {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     });
-    
-    if (response.data.access_token) {
-      this.setToken(response.data.access_token);
-      this.setRefreshToken(response.data.refresh_token);
+    const data = response.data;
+    if (data.requires_2fa && data.temp_token) {
+      return { requires_2fa: true, temp_token: data.temp_token };
     }
-    
+    if (data.access_token) {
+      this.setToken(data.access_token);
+      this.setRefreshToken(data.refresh_token);
+    }
+    return data;
+  }
+
+  async verify2faLogin(tempToken: string, code: string): Promise<{ access_token: string; refresh_token: string; token_type: string }> {
+    const response = await this.client.post('/auth/2fa/verify-login', { temp_token: tempToken, code });
+    const data = response.data;
+    if (data.access_token) {
+      this.setToken(data.access_token);
+      this.setRefreshToken(data.refresh_token);
+    }
+    return data;
+  }
+
+  async get2faSetup(): Promise<{ secret: string; provisioning_uri: string }> {
+    const response = await this.client.get('/auth/2fa/setup');
     return response.data;
+  }
+
+  async enable2fa(code: string, secret: string): Promise<void> {
+    await this.client.post('/auth/2fa/enable', { code, secret });
+  }
+
+  async disable2fa(password: string): Promise<void> {
+    await this.client.post('/auth/2fa/disable', { password });
   }
 
   async getCurrentUser() {
@@ -157,8 +182,47 @@ class ApiClient {
     return response.data as { message: string };
   }
 
-  async updateProfile(data: { email?: string; username?: string; full_name?: string }) {
+  async updateProfile(data: { email?: string; username?: string; full_name?: string; dashboard_preferences?: { widget_ids?: string[] } }) {
     const response = await this.client.patch('/auth/me', data);
+    return response.data as { email?: string; username?: string; full_name?: string | null; dashboard_preferences?: { widget_ids?: string[] } | null };
+  }
+
+  // API keys (programmatic access)
+  async listApiKeys(): Promise<Array<{ id: number; name: string; last_used_at: string | null; created_at: string }>> {
+    const response = await this.client.get('/api-keys');
+    return response.data;
+  }
+
+  async createApiKey(name: string): Promise<{ id: number; name: string; key: string; message?: string }> {
+    const response = await this.client.post('/api-keys', { name });
+    return response.data;
+  }
+
+  async revokeApiKey(keyId: number): Promise<void> {
+    await this.client.delete(`/api-keys/${keyId}`);
+  }
+
+  async getBackup(): Promise<Record<string, unknown>> {
+    const response = await this.client.get('/backup');
+    return response.data;
+  }
+
+  async restoreBackup(file: File, confirm: boolean): Promise<{ message: string }> {
+    const form = new FormData();
+    form.append('file', file);
+    const response = await this.client.post(`/backup/restore?confirm=${confirm}`, form);
+    return response.data;
+  }
+
+  async getSpendingInsights(): Promise<{
+    this_month_income: number;
+    this_month_expenses: number;
+    last_month_income: number;
+    last_month_expenses: number;
+    expense_change_pct: number;
+    narrative: string;
+  }> {
+    const response = await this.client.get('/reports/insights');
     return response.data;
   }
 
@@ -204,8 +268,10 @@ class ApiClient {
     return response.data;
   }
 
-  async createTransaction(data: any) {
-    const response = await this.client.post('/transactions', data);
+  async createTransaction(data: any, force = false) {
+    const response = await this.client.post('/transactions', data, {
+      params: force ? { force: 'true' } : undefined,
+    });
     return response.data;
   }
 
@@ -282,6 +348,11 @@ class ApiClient {
   }
 
   // Recurring transactions
+  async runRecurringNow(): Promise<{ processed: number; created: number }> {
+    const response = await this.client.post('/recurring/run-now');
+    return response.data;
+  }
+
   async getRecurring(limit?: number) {
     const response = await this.client.get('/recurring', { params: { limit } });
     return response.data as Array<{

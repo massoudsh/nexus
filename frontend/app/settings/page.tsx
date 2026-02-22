@@ -13,13 +13,28 @@ export default function SettingsPage() {
   const router = useRouter()
   const { theme, setTheme } = useTheme()
   const { addToast } = useToast()
-  const [user, setUser] = useState<{ email?: string; username?: string; full_name?: string | null } | null>(null)
+  const [user, setUser] = useState<{ email?: string; username?: string; full_name?: string | null; totp_enabled?: boolean; dashboard_preferences?: { widget_ids?: string[] } | null } | null>(null)
   const [loading, setLoading] = useState(true)
   const [isGuest, setIsGuest] = useState(false)
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [form, setForm] = useState({ email: '', username: '', full_name: '' })
+  const [apiKeys, setApiKeys] = useState<Array<{ id: number; name: string; last_used_at: string | null; created_at: string }>>([])
+  const [apiKeyName, setApiKeyName] = useState('')
+  const [creatingKey, setCreatingKey] = useState(false)
+  const [newKeyShown, setNewKeyShown] = useState<{ id: number; name: string; key: string } | null>(null)
+  const [revokingId, setRevokingId] = useState<number | null>(null)
+  const [twoFaSetup, setTwoFaSetup] = useState<{ secret: string; provisioning_uri: string } | null>(null)
+  const [twoFaCode, setTwoFaCode] = useState('')
+  const [twoFaDisablePassword, setTwoFaDisablePassword] = useState('')
+  const [twoFaLoading, setTwoFaLoading] = useState(false)
+  const [dashboardWidgets, setDashboardWidgets] = useState<string[]>(['kpi', 'burn', 'charts', 'quick_links', 'accounts', 'recent'])
+  const [savingLayout, setSavingLayout] = useState(false)
+  const [backupDownloading, setBackupDownloading] = useState(false)
+  const [restoreFile, setRestoreFile] = useState<File | null>(null)
+  const [restoreConfirm, setRestoreConfirm] = useState(false)
+  const [restoring, setRestoring] = useState(false)
 
   useEffect(() => {
     loadUser()
@@ -32,13 +47,24 @@ export default function SettingsPage() {
         username: user.username ?? '',
         full_name: user.full_name ?? '',
       })
+      if (user.dashboard_preferences?.widget_ids?.length) setDashboardWidgets(user.dashboard_preferences.widget_ids)
     }
   }, [user])
+
+  const loadApiKeys = async () => {
+    try {
+      const list = await apiClient.listApiKeys()
+      setApiKeys(list)
+    } catch {
+      setApiKeys([])
+    }
+  }
 
   const loadUser = async () => {
     try {
       const data = await apiClient.getCurrentUser()
       setUser(data)
+      loadApiKeys()
     } catch (error) {
       console.error('Failed to load user:', error)
       const status = (error as any)?.response?.status
@@ -220,6 +246,189 @@ export default function SettingsPage() {
                       {t === 'light' ? fa.settings.light : t === 'dark' ? fa.settings.dark : fa.settings.system}
                     </button>
                   ))}
+                </div>
+              </div>
+
+              <div className="card p-6">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{fa.settings.dashboardLayout}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">انتخاب کنید کدام بخش‌ها در داشبورد نمایش داده شوند.</p>
+                <div className="flex flex-wrap gap-4 mb-4">
+                  {[
+                    { id: 'kpi', label: 'نوار شاخص' },
+                    { id: 'burn', label: 'هوش سوخت' },
+                    { id: 'charts', label: 'نمودارها' },
+                    { id: 'quick_links', label: 'لینک‌های سریع' },
+                    { id: 'accounts', label: 'حساب‌ها' },
+                    { id: 'recent', label: 'تراکنش‌های اخیر' },
+                  ].map((w) => (
+                    <label key={w.id} className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" checked={dashboardWidgets.includes(w.id)} onChange={(e) => setDashboardWidgets((prev) => (e.target.checked ? [...prev, w.id] : prev.filter((x) => x !== w.id)))} className="rounded border-gray-300 dark:border-gray-600 text-primary-600" />
+                      <span className="text-sm text-gray-700 dark:text-gray-300">{w.label}</span>
+                    </label>
+                  ))}
+                </div>
+                <button type="button" disabled={savingLayout} onClick={async () => { setSavingLayout(true); try { const u = await apiClient.updateProfile({ dashboard_preferences: { widget_ids: dashboardWidgets } }); setUser((prev) => (prev ? { ...prev, dashboard_preferences: u.dashboard_preferences ?? undefined } : null)); addToast('success', 'چیدمان ذخیره شد.'); } catch (err) { addToast('error', getApiErrorMessage(err)); } finally { setSavingLayout(false); }} className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 text-sm font-medium">{savingLayout ? fa.common.loading : fa.common.save}</button>
+              </div>
+
+              <div className="card p-6">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{fa.settings.security}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{fa.settings.twoFactor}</p>
+                {user?.totp_enabled ? (
+                  <div>
+                    <p className="text-sm text-green-600 dark:text-green-400 mb-2">احراز هویت دو مرحله‌ای فعال است.</p>
+                    <form
+                      onSubmit={async (e) => {
+                        e.preventDefault()
+                        if (!twoFaDisablePassword) return
+                        setTwoFaLoading(true)
+                        try {
+                          await apiClient.disable2fa(twoFaDisablePassword)
+                          setUser((u) => (u ? { ...u, totp_enabled: false } : null))
+                          setTwoFaDisablePassword('')
+                          addToast('success', '۲FA غیرفعال شد.')
+                        } catch (err) {
+                          addToast('error', getApiErrorMessage(err))
+                        } finally {
+                          setTwoFaLoading(false)
+                        }
+                      }}
+                      className="flex gap-2 items-end"
+                    >
+                      <div className="flex-1">
+                        <label htmlFor="disable-2fa-pw" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{fa.auth.password}</label>
+                        <input id="disable-2fa-pw" type="password" value={twoFaDisablePassword} onChange={(e) => setTwoFaDisablePassword(e.target.value)} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700" />
+                      </div>
+                      <button type="submit" disabled={twoFaLoading} className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 text-sm font-medium">غیرفعال کردن ۲FA</button>
+                    </form>
+                  </div>
+                ) : twoFaSetup ? (
+                  <div className="space-y-3">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">کد اپ احراز هویت را با این رمز (یا اسکن QR) اضافه کنید، سپس کد ۶ رقمی را وارد کنید.</p>
+                    <p className="text-xs font-mono break-all bg-gray-100 dark:bg-gray-800 p-2 rounded">{twoFaSetup.secret}</p>
+                    <form
+                      onSubmit={async (e) => {
+                        e.preventDefault()
+                        if (twoFaCode.length !== 6) return
+                        setTwoFaLoading(true)
+                        try {
+                          await apiClient.enable2fa(twoFaCode, twoFaSetup.secret)
+                          setUser((u) => (u ? { ...u, totp_enabled: true } : null))
+                          setTwoFaSetup(null)
+                          setTwoFaCode('')
+                          addToast('success', '۲FA فعال شد.')
+                        } catch (err) {
+                          addToast('error', getApiErrorMessage(err))
+                        } finally {
+                          setTwoFaLoading(false)
+                        }
+                      }}
+                      className="flex gap-2"
+                    >
+                      <input type="text" inputMode="numeric" maxLength={6} placeholder="۰۰۰۰۰۰" value={twoFaCode} onChange={(e) => setTwoFaCode(e.target.value.replace(/\D/g, ''))} className="w-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-center" />
+                      <button type="submit" disabled={twoFaLoading || twoFaCode.length !== 6} className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 text-sm font-medium">{fa.auth.verify}</button>
+                      <button type="button" onClick={() => { setTwoFaSetup(null); setTwoFaCode(''); }} className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm">{fa.common.cancel}</button>
+                    </form>
+                  </div>
+                ) : (
+                  <button type="button" onClick={async () => { try { const s = await apiClient.get2faSetup(); setTwoFaSetup(s); } catch (err) { addToast('error', getApiErrorMessage(err)); } }} className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 text-sm font-medium">فعال‌سازی ۲FA</button>
+                )}
+              </div>
+
+              <div className="card p-6">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{fa.settings.apiKeys}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{fa.settings.apiKeysDescription}</p>
+                <form
+                  onSubmit={async (e) => {
+                    e.preventDefault()
+                    if (!apiKeyName.trim()) return
+                    setCreatingKey(true)
+                    try {
+                      const res = await apiClient.createApiKey(apiKeyName.trim())
+                      setNewKeyShown({ id: res.id, name: res.name, key: res.key })
+                      setApiKeyName('')
+                      loadApiKeys()
+                    } catch (err) {
+                      addToast('error', getApiErrorMessage(err))
+                    } finally {
+                      setCreatingKey(false)
+                    }
+                  }}
+                  className="flex gap-2 mb-4"
+                >
+                  <input
+                    type="text"
+                    placeholder={fa.settings.keyName}
+                    value={apiKeyName}
+                    onChange={(e) => setApiKeyName(e.target.value)}
+                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                  <button type="submit" disabled={creatingKey} className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 text-sm font-medium">
+                    {creatingKey ? fa.settings.saving : fa.settings.createApiKey}
+                  </button>
+                </form>
+                <ul className="space-y-2">
+                  {apiKeys.map((k) => (
+                    <li key={k.id} className="flex items-center justify-between py-2 border-b border-gray-200 dark:border-gray-700 last:border-0">
+                      <div>
+                        <span className="font-medium text-gray-900 dark:text-white">{k.name}</span>
+                        <span className="text-sm text-gray-500 dark:text-gray-400 mr-2">
+                          · {k.last_used_at ? new Date(k.last_used_at).toLocaleDateString('fa-IR') : fa.settings.neverUsed}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (!confirm(fa.settings.revokeConfirm)) return
+                          setRevokingId(k.id)
+                          try {
+                            await apiClient.revokeApiKey(k.id)
+                            loadApiKeys()
+                          } catch (err) {
+                            addToast('error', getApiErrorMessage(err))
+                          } finally {
+                            setRevokingId(null)
+                          }
+                        }}
+                        disabled={revokingId === k.id}
+                        className="text-red-600 dark:text-red-400 text-sm font-medium hover:underline disabled:opacity-50"
+                      >
+                        {fa.settings.revoke}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                {newKeyShown && (
+                  <div className="mt-4 p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+                    <p className="text-sm font-medium text-amber-800 dark:text-amber-200 mb-2">{fa.settings.keyCreatedCopy}</p>
+                    <div className="flex gap-2">
+                      <code className="flex-1 break-all text-xs bg-white dark:bg-gray-800 p-2 rounded border border-amber-200 dark:border-amber-700">
+                        {newKeyShown.key}
+                      </code>
+                      <button
+                        type="button"
+                        onClick={() => { navigator.clipboard.writeText(newKeyShown!.key); addToast('success', fa.settings.copyKey); }}
+                        className="px-3 py-1.5 bg-amber-600 text-white rounded text-sm"
+                      >
+                        {fa.settings.copyKey}
+                      </button>
+                    </div>
+                    <button type="button" onClick={() => setNewKeyShown(null)} className="mt-2 text-sm text-amber-700 dark:text-amber-300 hover:underline">
+                      {fa.common.close}
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="card p-6">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{fa.settings.backupRestore}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">پشتیبان JSON از حساب‌ها، تراکنش‌ها، بودجه و اهداف.</p>
+                <div className="flex flex-wrap gap-4 items-end">
+                  <button type="button" disabled={backupDownloading} onClick={async () => { setBackupDownloading(true); try { const data = await apiClient.getBackup(); const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `nexus-backup-${new Date().toISOString().slice(0, 10)}.json`; a.click(); URL.revokeObjectURL(url); addToast('success', 'پشتیبان دانلود شد.'); } catch (err) { addToast('error', getApiErrorMessage(err)); } finally { setBackupDownloading(false); } }} className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 text-sm font-medium">دانلود پشتیبان</button>
+                  <div className="flex gap-2 items-center flex-wrap">
+                    <input type="file" accept=".json" onChange={(e) => setRestoreFile(e.target.files?.[0] ?? null)} className="text-sm" />
+                    <label className="flex items-center gap-1 text-sm text-gray-700 dark:text-gray-300"><input type="checkbox" checked={restoreConfirm} onChange={(e) => setRestoreConfirm(e.target.checked)} /> تأیید بازیابی</label>
+                    <button type="button" disabled={!restoreFile || !restoreConfirm || restoring} onClick={async () => { if (!restoreFile || !restoreConfirm) return; setRestoring(true); try { await apiClient.restoreBackup(restoreFile, true); addToast('success', 'فایل اعتبارسنجی شد.'); setRestoreFile(null); setRestoreConfirm(false); } catch (err) { addToast('error', getApiErrorMessage(err)); } finally { setRestoring(false); } }} className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm disabled:opacity-50">ارسال برای اعتبارسنجی</button>
+                  </div>
                 </div>
               </div>
 

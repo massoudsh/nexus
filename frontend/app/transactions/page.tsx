@@ -11,6 +11,7 @@ import { fa } from '@/lib/fa'
 import type { Account } from '@/lib/schemas/account'
 import type { Transaction } from '@/lib/schemas/transaction'
 import type { CategoryOption } from '@/components/forms/TransactionForm'
+import { MOCK_ACCOUNTS, MOCK_TRANSACTIONS } from '@/lib/mock-data'
 
 export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
@@ -26,24 +27,47 @@ export default function TransactionsPage() {
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null)
   const [deletingId, setDeletingId] = useState<number | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<Transaction | null>(null)
+  const [isMock, setIsMock] = useState(false)
+  const [filters, setFilters] = useState<{
+    q?: string
+    account_id?: number
+    category_id?: number
+    amount_min?: number
+    amount_max?: number
+    start_date?: string
+    end_date?: string
+  }>({})
 
   const loadTransactions = useCallback(async () => {
+    setLoading(true)
+    setIsMock(false)
     try {
-      const data = await apiClient.getTransactions()
+      const params: Record<string, string | number> = {}
+      if (filters.q?.trim()) params.q = filters.q.trim()
+      if (filters.account_id) params.account_id = filters.account_id
+      if (filters.category_id) params.category_id = filters.category_id
+      if (filters.amount_min != null) params.amount_min = filters.amount_min
+      if (filters.amount_max != null) params.amount_max = filters.amount_max
+      if (filters.start_date) params.start_date = filters.start_date
+      if (filters.end_date) params.end_date = filters.end_date
+      const data = await apiClient.getTransactions(params)
       setTransactions(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Failed to load transactions:', error)
+      setTransactions(MOCK_TRANSACTIONS as Transaction[])
+      setIsMock(true)
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [filters])
 
   const loadAccounts = useCallback(async () => {
     try {
       const data = await apiClient.getAccounts()
-      setAccounts(data)
+      setAccounts(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Failed to load accounts:', error)
+      setAccounts(MOCK_ACCOUNTS as Account[])
     }
   }, [])
 
@@ -53,6 +77,7 @@ export default function TransactionsPage() {
       setCategories(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Failed to load categories:', error)
+      setCategories([{ id: 1, name: 'خوراک' }, { id: 2, name: 'حمل‌ونقل' }, { id: 3, name: 'سرگرمی' }])
     }
   }, [])
 
@@ -118,9 +143,12 @@ export default function TransactionsPage() {
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{fa.transactions.title}</h2>
-            <div className="flex gap-2">
+          <div className="flex justify-between items-center mb-6 flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{fa.transactions.title}</h2>
+              {isMock && <span className="text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 px-2 py-1 rounded-full">نمایش نمونه</span>}
+            </div>
+            <div className="flex gap-2 flex-wrap">
               <button
                 type="button"
                 onClick={() => setImportOpen(true)}
@@ -136,6 +164,41 @@ export default function TransactionsPage() {
                 {fa.transactions.addTransaction}
               </button>
             </div>
+          </div>
+          <div className="flex flex-wrap gap-3 mb-4 p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+            <input
+              type="text"
+              placeholder="جستجو در توضیح..."
+              value={filters.q ?? ''}
+              onChange={(e) => setFilters((f) => ({ ...f, q: e.target.value || undefined }))}
+              onKeyDown={(e) => e.key === 'Enter' && loadTransactions()}
+              className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white min-w-[180px]"
+            />
+            <select
+              value={filters.account_id ?? ''}
+              onChange={(e) => setFilters((f) => ({ ...f, account_id: e.target.value ? Number(e.target.value) : undefined }))}
+              className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            >
+              <option value="">همه حساب‌ها</option>
+              {accounts.map((a) => (
+                <option key={a.id} value={a.id}>{a.name}</option>
+              ))}
+            </select>
+            <select
+              value={filters.category_id ?? ''}
+              onChange={(e) => setFilters((f) => ({ ...f, category_id: e.target.value ? Number(e.target.value) : undefined }))}
+              className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            >
+              <option value="">همه دسته‌ها</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+            <input type="number" placeholder="حداقل مبلغ" value={filters.amount_min ?? ''} onChange={(e) => setFilters((f) => ({ ...f, amount_min: e.target.value ? Number(e.target.value) : undefined }))} className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 w-28" />
+            <input type="number" placeholder="حداکثر مبلغ" value={filters.amount_max ?? ''} onChange={(e) => setFilters((f) => ({ ...f, amount_max: e.target.value ? Number(e.target.value) : undefined }))} className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 w-28" />
+            <button type="button" onClick={() => loadTransactions()} className="px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700">
+              اعمال فیلتر
+            </button>
           </div>
 
           {loading ? (

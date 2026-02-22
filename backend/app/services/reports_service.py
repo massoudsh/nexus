@@ -145,3 +145,36 @@ class ReportsService:
             "net": float(total_income - total_expenses)
         }
 
+    def get_spending_insights(self, user_id: int) -> Dict:
+        """Period-over-period: this month vs last month; simple narrative."""
+        today = date.today()
+        this_start = date(today.year, today.month, 1)
+        if today.month == 1:
+            last_start = date(today.year - 1, 12, 1)
+            last_end = date(today.year - 1, 12, 31)
+        else:
+            last_start = date(today.year, today.month - 1, 1)
+            last_end = this_start - timedelta(days=1)
+        this_end = today
+        this_ivs = self.get_income_vs_expenses(
+            user_id,
+            datetime.combine(this_start, datetime.min.time()),
+            datetime.combine(this_end, datetime.max.time()),
+        )
+        last_ivs = self.get_income_vs_expenses(
+            user_id,
+            datetime.combine(last_start, datetime.min.time()),
+            datetime.combine(last_end, datetime.max.time()),
+        )
+        this_exp = this_ivs["expenses"]
+        last_exp = last_ivs["expenses"]
+        pct = (float(this_exp - last_exp) / last_exp * 100) if last_exp else 0
+        return {
+            "this_month_income": this_ivs["income"],
+            "this_month_expenses": this_ivs["expenses"],
+            "last_month_income": last_ivs["income"],
+            "last_month_expenses": last_ivs["expenses"],
+            "expense_change_pct": round(pct, 1),
+            "narrative": f"هزینه این ماه نسبت به ماه قبل {pct:+.1f}٪ است." if last_exp else "داده ماه قبل برای مقایسه نیست.",
+        }
+

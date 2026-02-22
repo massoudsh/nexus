@@ -11,10 +11,11 @@ from app.models.junior import JuniorProfile, JuniorGoal, AutomatedDeposit, Rewar
 from app.models.banking_message import BankingMessage
 from app.models.payment import Payment
 from app.models.recurring import RecurringTransaction
+from app.models.api_key import ApiKey
 
 __all__ = [
     "User", "Account", "Transaction", "Budget", "Goal", "Category",
     "JuniorProfile", "JuniorGoal", "AutomatedDeposit", "Reward",
-    "BankingMessage", "Payment", "RecurringTransaction",
+    "BankingMessage", "Payment", "RecurringTransaction", "ApiKey",
 ]
 

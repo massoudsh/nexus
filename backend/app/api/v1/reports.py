@@ -36,3 +36,13 @@ async def get_income_vs_expenses(
     service = ReportsService(db)
     return service.get_income_vs_expenses(current_user.id, start_date, end_date)
 
+
+@router.get("/insights")
+async def get_spending_insights(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Period-over-period spending insights (this month vs last, category trends)."""
+    service = ReportsService(db)
+    return service.get_spending_insights(current_user.id)
+
