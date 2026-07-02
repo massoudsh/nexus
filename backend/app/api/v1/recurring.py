@@ -18,9 +18,13 @@ from app.services.transactions_service import TransactionsService
 router = APIRouter()
 
 
+def _to_out(rec: RecurringTransaction) -> RecurringTransactionOut:
+    return RecurringTransactionOut.model_validate(rec)
+
+
 def _next_run(freq: RecurrenceFrequency, from_date: date) -> date:
+    from datetime import timedelta
     if freq == RecurrenceFrequency.WEEKLY:
-        from datetime import timedelta
         return from_date + timedelta(days=7)
     if freq == RecurrenceFrequency.MONTHLY:
         if from_date.month == 12:
@@ -28,7 +32,7 @@ def _next_run(freq: RecurrenceFrequency, from_date: date) -> date:
         return from_date.replace(month=from_date.month + 1)
     if freq == RecurrenceFrequency.YEARLY:
         return from_date.replace(year=from_date.year + 1)
-    return from_date
+    raise ValueError(f"Unknown recurrence frequency: {freq}")
 
 
 @router.get("/", response_model=List[RecurringTransactionOut])
@@ -45,22 +49,7 @@ async def list_recurring(
         .limit(limit)
         .all()
     )
-    return [
-        RecurringTransactionOut(
-            id=r.id,
-            user_id=r.user_id,
-            account_id=r.account_id,
-            category_id=r.category_id,
-            amount=r.amount,
-            transaction_type=r.transaction_type,
-            description=r.description,
-            frequency=r.frequency,
-            next_run_date=r.next_run_date,
-            is_active=r.is_active,
-            created_at=r.created_at.isoformat() if r.created_at else None,
-        )
-        for r in rows
-    ]
+    return [_to_out(r) for r in rows]
 
 
 @router.post("/", response_model=RecurringTransactionOut, status_code=status.HTTP_201_CREATED)
@@ -85,24 +74,12 @@ async def create_recurring(
         description=body.description,
         frequency=body.frequency,
         next_run_date=body.next_run_date,
-        is_active=1,
+        is_active=1,  # model column is Integer; 1 = active
     )
     db.add(rec)
     db.commit()
     db.refresh(rec)
-    return RecurringTransactionOut(
-        id=rec.id,
-        user_id=rec.user_id,
-        account_id=rec.account_id,
-        category_id=rec.category_id,
-        amount=rec.amount,
-        transaction_type=rec.transaction_type,
-        description=rec.description,
-        frequency=rec.frequency,
-        next_run_date=rec.next_run_date,
-        is_active=rec.is_active,
-        created_at=rec.created_at.isoformat() if rec.created_at else None,
-    )
+    return _to_out(rec)
 
 
 @router.get("/{rec_id}", response_model=RecurringTransactionOut)
@@ -118,19 +95,7 @@ async def get_recurring(
     ).first()
     if not rec:
         raise HTTPException(status_code=404, detail="Recurring transaction not found")
-    return RecurringTransactionOut(
-        id=rec.id,
-        user_id=rec.user_id,
-        account_id=rec.account_id,
-        category_id=rec.category_id,
-        amount=rec.amount,
-        transaction_type=rec.transaction_type,
-        description=rec.description,
-        frequency=rec.frequency,
-        next_run_date=rec.next_run_date,
-        is_active=rec.is_active,
-        created_at=rec.created_at.isoformat() if rec.created_at else None,
-    )
+    return _to_out(rec)
 
 
 @router.patch("/{rec_id}", response_model=RecurringTransactionOut)
@@ -156,19 +121,7 @@ async def update_recurring(
         setattr(rec, k, v)
     db.commit()
     db.refresh(rec)
-    return RecurringTransactionOut(
-        id=rec.id,
-        user_id=rec.user_id,
-        account_id=rec.account_id,
-        category_id=rec.category_id,
-        amount=rec.amount,
-        transaction_type=rec.transaction_type,
-        description=rec.description,
-        frequency=rec.frequency,
-        next_run_date=rec.next_run_date,
-        is_active=rec.is_active,
-        created_at=rec.created_at.isoformat() if rec.created_at else None,
-    )
+    return _to_out(rec)
 
 
 @router.delete("/{rec_id}", status_code=status.HTTP_204_NO_CONTENT)

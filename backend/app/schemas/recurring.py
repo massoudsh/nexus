@@ -1,9 +1,9 @@
 """Recurring transaction schemas."""
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_serializer
 
 from app.models.recurring import RecurrenceFrequency
 
@@ -37,8 +37,12 @@ class RecurringTransactionOut(RecurringTransactionBase):
     id: int
     user_id: int
     is_active: int
-    created_at: Optional[str] = None
+    created_at: Optional[datetime] = None
     next_run_date: date
+
+    @field_serializer("created_at")
+    def serialize_created_at(self, v: Optional[datetime]) -> Optional[str]:
+        return v.isoformat() if v else None
 
     class Config:
         from_attributes = True

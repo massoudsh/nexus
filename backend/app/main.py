@@ -33,8 +33,13 @@ RATE_LIMIT_WINDOW_SEC = 60
 _rate_limit_store: dict[str, list[float]] = defaultdict(list)
 
 
+_RATE_CLEANUP_INTERVAL = 300  # clean stale IPs every 5 minutes
+_last_cleanup = time.monotonic()
+
+
 class RateLimitMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
+        global _last_cleanup
         path = request.scope.get("path", "")
         if path in ("/", "/health", "/docs", "/openapi.json", "/redoc"):
             return await call_next(request)
@@ -49,6 +54,12 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                 content={"detail": "Too many requests. Please try again later."},
             )
         _rate_limit_store[key].append(now)
+        # Periodically evict IPs with no recent requests to prevent unbounded growth
+        if now - _last_cleanup > _RATE_CLEANUP_INTERVAL:
+            stale = [k for k, v in _rate_limit_store.items() if not v]
+            for k in stale:
+                del _rate_limit_store[k]
+            _last_cleanup = now
         return await call_next(request)
 
 

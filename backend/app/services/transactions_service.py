@@ -130,31 +130,50 @@ class TransactionsService:
         transaction = self.get_transaction(transaction_id, user_id)
         if not transaction:
             return None
-        
-        # Handle balance updates if amount or type changes
-        old_amount = transaction.amount
+
+        # Capture old values before any mutation
+        old_amount = Decimal(str(transaction.amount))
         old_type = transaction.transaction_type
-        
+        old_account_id = transaction.account_id
+
         update_data = transaction_data.model_dump(exclude_unset=True)
-        
-        # Update transaction
+
+        new_account_id = update_data.get("account_id", old_account_id)
+        new_amount = Decimal(str(update_data.get("amount", old_amount)))
+        raw_new_type = update_data.get("transaction_type", old_type)
+        from app.models.transaction import TransactionType as TT
+        new_type = TT(raw_new_type) if isinstance(raw_new_type, str) else raw_new_type
+
+        # Apply field updates to the transaction row
         for field, value in update_data.items():
             setattr(transaction, field, value)
-        
-        # Revert old transaction impact on balance
-        account = transaction.account
-        if old_type.value == "income":
-            account.balance -= Decimal(str(old_amount))
-        elif old_type.value == "expense":
-            account.balance += Decimal(str(old_amount))
-        
-        # Apply new transaction impact on balance
-        new_amount = Decimal(str(transaction.amount))
-        if transaction.transaction_type.value == "income":
-            account.balance += new_amount
-        elif transaction.transaction_type.value == "expense":
-            account.balance -= new_amount
-        
+
+        # Revert old impact from the old account
+        old_account = self.db.query(Account).filter(Account.id == old_account_id).first()
+        if old_account:
+            if old_type.value == "income":
+                old_account.balance -= old_amount
+            elif old_type.value == "expense":
+                old_account.balance += old_amount
+
+        # Apply new impact to the (possibly different) new account
+        if new_account_id != old_account_id:
+            new_account = self.db.query(Account).filter(
+                Account.id == new_account_id,
+                Account.user_id == user_id,
+            ).first()
+            if not new_account:
+                self.db.rollback()
+                raise ValueError("New account not found")
+        else:
+            new_account = old_account
+
+        if new_account:
+            if new_type.value == "income":
+                new_account.balance += new_amount
+            elif new_type.value == "expense":
+                new_account.balance -= new_amount
+
         self.db.commit()
         self.db.refresh(transaction)
         return transaction

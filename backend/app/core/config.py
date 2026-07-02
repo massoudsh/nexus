@@ -2,7 +2,7 @@
 Configuration management for the application.
 Handles environment variables and application settings.
 """
-from pydantic import field_validator
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings
 from typing import Optional, Union
 
@@ -61,6 +61,16 @@ class Settings(BaseSettings):
     SMTP_PASSWORD: Optional[str] = None
     SMTP_FROM: Optional[str] = None  # e.g. noreply@yourapp.com
     EMAIL_ENABLED: bool = False  # set True when SMTP_* are set
+
+    @model_validator(mode="after")
+    def _check_secret_key(self) -> "Settings":
+        insecure = "your-secret-key-change-in-production"
+        if not self.DEBUG and self.SECRET_KEY == insecure:
+            raise ValueError(
+                "SECRET_KEY must be changed from the default value before running in production. "
+                "Set DEBUG=true to bypass this check in development."
+            )
+        return self
 
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod

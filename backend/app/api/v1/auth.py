@@ -79,7 +79,10 @@ async def login(
     db: Session = Depends(get_db)
 ):
     """Login: returns tokens, or requires_2fa + temp_token if 2FA is enabled."""
-    user = db.query(UserModel).filter(UserModel.username == form_data.username).first()
+    identifier = form_data.username
+    user = db.query(UserModel).filter(
+        (UserModel.username == identifier) | (UserModel.email == identifier)
+    ).first()
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

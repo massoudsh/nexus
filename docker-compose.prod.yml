@@ -1,17 +1,39 @@
-# Production-style override: no host mounts, no reload, use env file for secrets.
+# Production override: no host mounts, no reload, nginx reverse proxy, secrets from env file.
 # Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+# Required env vars: SECRET_KEY, POSTGRES_PASSWORD, CORS_ORIGINS, NEXT_PUBLIC_API_URL
 
 services:
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+  postgres:
     environment:
-      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/personalfinance
-      SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+    restart: unless-stopped
+
+  backend:
+    environment:
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/personalfinance
+      SECRET_KEY: ${SECRET_KEY:?SECRET_KEY is required}
       DEBUG: "false"
       AUTO_CREATE_DB: "false"
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
     volumes: []
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    ports: []
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2
+    restart: unless-stopped
+
+  frontend:
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost/api/v1}
+    ports: []
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - backend
+      - frontend
     restart: unless-stopped

@@ -160,7 +160,7 @@ async def record_payment_as_income(
     if payment.status != "completed":
         raise HTTPException(status_code=400, detail="Only completed payments can be recorded as income")
     amount = float(payment.amount_rials)
-    description = f"ZarinPal payment"
+    description = "ZarinPal payment"
     if payment.ref_id:
         description += f" (Ref: {payment.ref_id})"
     if payment.description:
