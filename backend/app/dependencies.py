@@ -33,7 +33,8 @@ async def get_current_user(
     if credentials and credentials.credentials:
         payload = decode_token(credentials.credentials)
         if payload is not None:
-            user_id = payload.get("sub")
+            raw_id = payload.get("sub")
+            user_id = int(raw_id) if raw_id is not None else None
             if user_id is not None:
                 user = db.query(User).filter(User.id == user_id).first()
                 if user is not None and user.is_active:

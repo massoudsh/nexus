@@ -64,6 +64,6 @@ def create_reset_token(data: dict, expires_delta: Optional[timedelta] = None) ->
 def create_2fa_pending_token(user_id: int) -> str:
     """Create a short-lived token for 2FA verification step (5 min)."""
     expire = datetime.now(timezone.utc) + timedelta(minutes=5)
-    to_encode = {"sub": user_id, "exp": expire, "type": "2fa_pending"}
+    to_encode = {"sub": str(user_id), "exp": expire, "type": "2fa_pending"}
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 

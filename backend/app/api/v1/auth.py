@@ -99,10 +99,10 @@ async def login(
         return {"requires_2fa": True, "temp_token": temp_token}
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": user.id, "username": user.username},
+        data={"sub": str(user.id), "username": user.username},
         expires_delta=access_token_expires
     )
-    refresh_token = create_refresh_token(data={"sub": user.id, "username": user.username})
+    refresh_token = create_refresh_token(data={"sub": str(user.id), "username": user.username})
     return {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
 
 
@@ -119,7 +119,7 @@ async def refresh_token(
             detail="Invalid refresh token"
         )
     
-    user_id = payload.get("sub")
+    user_id = int(payload.get("sub"))
     user = db.query(UserModel).filter(UserModel.id == user_id).first()
     
     if not user or not user.is_active:
@@ -131,10 +131,10 @@ async def refresh_token(
     # Create new tokens
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": user.id, "username": user.username},
+        data={"sub": str(user.id), "username": user.username},
         expires_delta=access_token_expires
     )
-    new_refresh_token = create_refresh_token(data={"sub": user.id, "username": user.username})
+    new_refresh_token = create_refresh_token(data={"sub": str(user.id), "username": user.username})
     
     return {
         "access_token": access_token,
@@ -206,7 +206,7 @@ async def reset_password(body: ResetPasswordRequest, db: Session = Depends(get_d
     payload = decode_token(body.token)
     if payload is None or payload.get("type") != "reset":
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired reset link")
-    user_id = payload.get("sub")
+    user_id = int(payload.get("sub"))
     user = db.query(UserModel).filter(UserModel.id == user_id).first()
     if not user or not user.is_active:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired reset link")
@@ -260,7 +260,7 @@ async def twofa_verify_login(body: TwoFactorVerifyLoginRequest, db: Session = De
     payload = decode_token(body.temp_token)
     if payload is None or payload.get("type") != "2fa_pending":
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token")
-    user_id = payload.get("sub")
+    user_id = int(payload.get("sub"))
     user = db.query(UserModel).filter(UserModel.id == user_id).first()
     if not user or not user.is_active or not user.totp_secret:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token")
@@ -269,9 +269,9 @@ async def twofa_verify_login(body: TwoFactorVerifyLoginRequest, db: Session = De
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired code")
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": user.id, "username": user.username},
+        data={"sub": str(user.id), "username": user.username},
         expires_delta=access_token_expires
     )
-    refresh_token = create_refresh_token(data={"sub": user.id, "username": user.username})
+    refresh_token = create_refresh_token(data={"sub": str(user.id), "username": user.username})
     return {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
 
