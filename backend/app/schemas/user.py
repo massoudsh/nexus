@@ -3,14 +3,14 @@ User schemas for request/response validation.
 """
 import json
 import re
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional, Any
 from datetime import datetime
 
 
 class UserBase(BaseModel):
     """Base user schema."""
-    email: EmailStr
+    email: str
     username: str = Field(..., min_length=3, max_length=50)
     full_name: Optional[str] = None
 
@@ -33,7 +33,7 @@ class UserCreate(UserBase):
 
 class UserUpdate(BaseModel):
     """Schema for user update."""
-    email: Optional[EmailStr] = None
+    email: Optional[str] = None
     username: Optional[str] = Field(None, min_length=3, max_length=50)
     full_name: Optional[str] = None
     is_active: Optional[bool] = None
@@ -95,7 +95,7 @@ class RefreshTokenRequest(BaseModel):
 
 class ForgotPasswordRequest(BaseModel):
     """Schema for forgot-password (stub: no email sent)."""
-    email: EmailStr
+    email: str
 
 
 class ForgotPasswordResponse(BaseModel):

@@ -125,11 +125,12 @@ export default function TransactionForm({ accounts, categories = [], transaction
         setLoading(false)
         return
       }
+      const detail = ax?.response?.data?.detail
       const message =
         err instanceof Error
           ? err.message
-          : typeof (ax?.response?.data?.detail === 'string')
-            ? ax.response.data.detail
+          : typeof detail === 'string'
+            ? detail
             : 'Failed to save transaction'
       setError(message)
     } finally {

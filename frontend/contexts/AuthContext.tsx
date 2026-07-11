@@ -38,7 +38,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const refreshAuth = useCallback(async (): Promise<boolean> => {
     if (typeof window === 'undefined') return false
-    const token = apiClient.getToken?.() ?? (typeof localStorage !== 'undefined' ? localStorage.getItem('access_token') : null)
+    const token = typeof localStorage !== 'undefined' ? localStorage.getItem('access_token') : null
     if (!token) {
       setUser(null)
       return false

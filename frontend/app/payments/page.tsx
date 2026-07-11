@@ -181,67 +181,69 @@ export default function PaymentsPage() {
           ) : payments.length === 0 ? (
             <div className="p-6 text-gray-500 dark:text-gray-400">No payments yet.</div>
           ) : (
-            <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-              {payments.map((p) => (
-                <li key={p.id} className="p-4 flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      {new Intl.NumberFormat('fa-IR').format(Number(p.amount_rials))} ریال
-                    </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {p.description || '—'} · {p.created_at ? new Date(p.created_at).toLocaleDateString('fa-IR', { year: 'numeric', month: 'short', day: 'numeric' }) : ''}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`text-sm font-medium px-2 py-1 rounded ${
-                        p.status === 'completed'
-                          ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
-                          : p.status === 'failed'
-                            ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
-                            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-                      }`}
-                    >
-                      {p.status}
-                    </span>
-                    {p.status === 'completed' && (
-                      <div className="flex items-center gap-1">
-                        {recordingId === p.id ? (
-                          <span className="text-xs text-gray-500">Recording...</span>
-                        ) : (
-                          <>
-                            <select
-                              value={recordAccountId}
-                              onChange={(e) => setRecordAccountId(e.target.value)}
-                              className="text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white py-1 px-2"
-                              aria-label="Account to record income"
-                            >
-                              <option value="">Account</option>
-                              {accounts.map((a) => (
-                                <option key={a.id} value={a.id}>{a.name}</option>
-                              ))}
-                            </select>
-                            <button
-                              type="button"
-                              onClick={() => handleRecordIncome(p.id)}
-                              disabled={!recordAccountId || recordingId !== null}
-                              className="text-xs px-2 py-1 bg-primary-600 text-white rounded hover:bg-primary-700 disabled:opacity-50"
-                            >
-                              Record as income
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ul>
-            {recordError && (
-              <div className="p-4 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm">
-                {recordError}
-              </div>
-            )}
+            <>
+              <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+                {payments.map((p) => (
+                  <li key={p.id} className="p-4 flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <p className="font-medium text-gray-900 dark:text-white">
+                        {new Intl.NumberFormat('fa-IR').format(Number(p.amount_rials))} ریال
+                      </p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {p.description || '—'} · {p.created_at ? new Date(p.created_at).toLocaleDateString('fa-IR', { year: 'numeric', month: 'short', day: 'numeric' }) : ''}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`text-sm font-medium px-2 py-1 rounded ${
+                          p.status === 'completed'
+                            ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
+                            : p.status === 'failed'
+                              ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
+                              : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                        }`}
+                      >
+                        {p.status}
+                      </span>
+                      {p.status === 'completed' && (
+                        <div className="flex items-center gap-1">
+                          {recordingId === p.id ? (
+                            <span className="text-xs text-gray-500">Recording...</span>
+                          ) : (
+                            <>
+                              <select
+                                value={recordAccountId}
+                                onChange={(e) => setRecordAccountId(e.target.value)}
+                                className="text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white py-1 px-2"
+                                aria-label="Account to record income"
+                              >
+                                <option value="">Account</option>
+                                {accounts.map((a) => (
+                                  <option key={a.id} value={a.id}>{a.name}</option>
+                                ))}
+                              </select>
+                              <button
+                                type="button"
+                                onClick={() => handleRecordIncome(p.id)}
+                                disabled={!recordAccountId || recordingId !== null}
+                                className="text-xs px-2 py-1 bg-primary-600 text-white rounded hover:bg-primary-700 disabled:opacity-50"
+                              >
+                                Record as income
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              {recordError && (
+                <div className="p-4 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm">
+                  {recordError}
+                </div>
+              )}
+            </>
           )}
         </div>
 

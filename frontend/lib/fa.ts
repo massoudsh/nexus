@@ -230,7 +230,6 @@ export const fa = {
     security: 'امنیت',
     twoFactor: 'احراز هویت دو مرحله‌ای',
     backupRestore: 'پشتیبان و بازیابی',
-    dashboardLayout: 'چیدمان داشبورد',
     help: 'راهنما',
   },
   payments: {
@@ -381,6 +380,7 @@ export const fa = {
     milestone: 'میلستون',
     bonus: 'پاداش',
     custom: 'سفارشی',
+    amount: 'مبلغ',
   },
 } as const
 

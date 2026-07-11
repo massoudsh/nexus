@@ -267,7 +267,7 @@ export default function SettingsPage() {
                     </label>
                   ))}
                 </div>
-                <button type="button" disabled={savingLayout} onClick={async () => { setSavingLayout(true); try { const u = await apiClient.updateProfile({ dashboard_preferences: { widget_ids: dashboardWidgets } }); setUser((prev) => (prev ? { ...prev, dashboard_preferences: u.dashboard_preferences ?? undefined } : null)); addToast('success', 'چیدمان ذخیره شد.'); } catch (err) { addToast('error', getApiErrorMessage(err)); } finally { setSavingLayout(false); }} className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 text-sm font-medium">{savingLayout ? fa.common.loading : fa.common.save}</button>
+                <button type="button" disabled={savingLayout} onClick={async () => { setSavingLayout(true); try { const u = await apiClient.updateProfile({ dashboard_preferences: { widget_ids: dashboardWidgets } }); setUser((prev) => (prev ? { ...prev, dashboard_preferences: u.dashboard_preferences ?? undefined } : null)); addToast('success', 'چیدمان ذخیره شد.'); } catch (err) { addToast('error', getApiErrorMessage(err)); } finally { setSavingLayout(false); }}} className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 text-sm font-medium">{savingLayout ? fa.common.loading : fa.common.save}</button>
               </div>
 
               <div className="card p-6">
