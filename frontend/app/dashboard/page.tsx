@@ -399,6 +399,7 @@ export default function DashboardPage() {
           )}
 
           {widgetIds.includes('accounts') || widgetIds.includes('recent') ? (
+          <>
           <div className="flex items-center justify-between gap-4 mb-4">
             <h2 className="text-lg font-semibold text-white">{fa.dashboard.accountsAndActivity}</h2>
             <div className="flex gap-2 print:hidden">
@@ -465,6 +466,7 @@ export default function DashboardPage() {
             </div>
             )}
           </div>
+          </>
           ) : null}
         </div>
       </main>
