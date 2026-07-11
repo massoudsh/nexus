@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { apiClient } from '@/lib/api'
 import { formatCurrency } from '@/lib/utils'
@@ -50,7 +50,7 @@ function InvestorExportBar() {
 import type { DashboardSummary } from '@/lib/schemas/dashboard'
 import type { Accounts } from '@/lib/schemas/account'
 
-export default function DashboardPage() {
+function DashboardPageContent() {
   const searchParams = useSearchParams()
   const [founderOverview, setFounderOverview] = useState<FounderOverview | null>(null)
   const [summary, setSummary] = useState<DashboardSummary | null>(null)
@@ -301,7 +301,7 @@ export default function DashboardPage() {
       <main id="main-content" className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           {paymentBanner && (
-            <div
+  <div
               className={`mb-4 rounded-lg border px-4 py-3 flex items-center justify-between ${
                 paymentBanner.type === 'success'
                   ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-800 dark:text-green-200'
@@ -474,3 +474,15 @@ export default function DashboardPage() {
   )
 }
 
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <div className="text-gray-400">Loading...</div>
+      </div>
+    }>
+      <DashboardPageContent />
+    </Suspense>
+  )
+}
