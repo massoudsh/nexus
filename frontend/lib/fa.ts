@@ -1,5 +1,5 @@
 /**
- * Persian (Farsi) translations for Nexus.
+ * Persian (Farsi) translations for Pishbin.
  * Use: fa.common.signIn, fa.dashboard.todayBalance, etc.
  */
 export const fa = {
@@ -50,13 +50,13 @@ export const fa = {
     viewAllBudgets: 'مشاهده همه بودجه‌ها',
   },
   auth: {
-    signInToNexus: 'ورود به نکسوس',
+    signInToPishbin: 'ورود به پیش‌بین',
     username: 'نام کاربری',
     password: 'رمز عبور',
     forgotPassword: 'رمز عبور را فراموش کرده‌اید؟',
     signingIn: 'در حال ورود…',
     dontHaveAccount: 'حساب کاربری ندارید؟ ثبت‌نام',
-    createYourAccount: 'ایجاد حساب نکسوس',
+    createYourAccount: 'ایجاد حساب پیش‌بین',
     email: 'ایمیل',
     fullName: 'نام کامل',
     register: 'ثبت‌نام',
@@ -171,21 +171,21 @@ export const fa = {
     viewReport: 'مشاهده گزارش ARR / MRR',
   },
   landing: {
-    smartAccounting: 'نرم‌افزار حسابداری هوشمند',
-    forStartups: 'برای استارتاپ‌ها.',
-    tagline: 'هوش مالی لحظه‌ای. اول جریان نقدی — نه دفتر کل.',
+    smartAccounting: 'کوپایلوت هوشمند تصمیم‌سازی مالی',
+    forStartups: 'برای کسب‌وکارهای کوچک و متوسط ایرانی.',
+    tagline: 'فاکتور، چک و نقدینگی را کنار هم ببینید — پیش از سؤال، تصمیم را جلو بکشید.',
     getStartedFree: 'شروع رایگان',
     goToDashboard: 'رفتن به داشبورد',
-    getCashBurnRunway: 'داده‌های نقد، سوخت و مدت دوام را لحظه‌ای ببینید.',
-    founderKpis: 'نمای کلی بنیانگذار با نوار شاخص، نمودار سوخت و موجودی نقد، هزینه و درآمد.',
+    getCashBurnRunway: 'اثر تصمیم امروز را روی ۳۰ روز آینده نقدینگی ببینید.',
+    founderKpis: 'نمای کلی نقدینگی با شاخص‌های کلیدی، جریان نقد و وضعیت پرداخت مشتریان.',
     openDashboard: 'باز کردن داشبورد',
-    confidentlyPresent: 'با اطمینان ARR/MRR را به سرمایه‌گذاران ارائه دهید.',
+    confidentlyPresent: 'با اطمینان وضعیت مالی کسب‌وکار را در یک نگاه ببینید.',
     compositionExport: 'ترکیب درآمد تکرارشونده، ریزش و نگهداری — خروجی CSV یا PDF.',
-    footer: 'نکسوس — هوش مالی لحظه‌ای برای اپراتورهای استارتاپ.',
+    footer: 'پیش‌بین — کوپایلوت هوشمند تصمیم‌سازی مالی برای SMEهای ایرانی.',
     onboardingCta: 'راهنمای شروع',
   },
   onboarding: {
-    title: 'خوش آمدید به نکسوس',
+    title: 'خوش آمدید به پیش‌بین',
     subtitle: 'چند قدم ساده تا داشبورد آماده.',
     step1Title: 'حساب بسازید',
     step1Desc: 'ثبت‌نام یا ورود کنید تا به داشبورد دسترسی داشته باشید.',

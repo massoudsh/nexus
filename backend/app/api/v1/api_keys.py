@@ -30,7 +30,7 @@ async def create_api_key(
     db: Session = Depends(get_db),
 ):
     """Create an API key. The plain key is returned once; store it securely."""
-    plain_key = f"nexus_{secrets.token_urlsafe(32)}"
+    plain_key = f"pishbin_{secrets.token_urlsafe(32)}"
     key_hash = hash_key(plain_key)
     api_key = ApiKey(user_id=current_user.id, name=body.name.strip(), key_hash=key_hash)
     db.add(api_key)

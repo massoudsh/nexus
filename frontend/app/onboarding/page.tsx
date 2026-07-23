@@ -17,9 +17,9 @@ export default function OnboardingPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between h-16 items-center">
           <Link href="/" className="flex items-center gap-2">
             <div className="h-9 w-9 rounded-full bg-emerald-400 flex items-center justify-center font-bold text-sm text-[#0f0f14]">
-              NX
+              PB
             </div>
-            <span className="font-semibold text-white">نکسوس</span>
+            <span className="font-semibold text-white">پیش‌بین</span>
           </Link>
           <div className="flex gap-3">
             <Link href="/login" className="text-sm font-medium text-gray-400 hover:text-white transition">

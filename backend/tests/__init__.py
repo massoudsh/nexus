@@ -1,1 +1,1 @@
-# Tests for Nexus API
+# Tests for Pishbin API

@@ -51,7 +51,7 @@ async def zarinpal_request(
         db,
         current_user.id,
         body.amount_rials,
-        body.description or "Nexus payment",
+        body.description or "Pishbin payment",
         email=body.email,
         mobile=body.mobile,
     )

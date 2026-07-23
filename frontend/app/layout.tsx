@@ -4,12 +4,12 @@ import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { ClientProviders } from '@/components/ClientProviders'
 
 export const metadata: Metadata = {
-  title: { default: 'نکسوس', template: '%s | نکسوس' },
-  description: 'هوش مالی لحظه‌ای برای اپراتورهای استارتاپ. نقد، سوخت، مدت دوام، ARR/MRR — آماده برای سرمایه‌گذار.',
-  applicationName: 'نکسوس',
+  title: { default: 'پیش‌بین', template: '%s | پیش‌بین' },
+  description: 'کوپایلوت هوشمند تصمیم‌سازی مالی برای کسب‌وکارهای کوچک و متوسط ایرانی. فاکتور، چک و نقدینگی را کنار هم ببینید و اثر تصمیم امروز را روی ۳۰ روز آینده بسنجید.',
+  applicationName: 'پیش‌بین',
   openGraph: {
-    title: 'نکسوس — هوش مالی لحظه‌ای برای استارتاپ‌ها',
-    description: 'داده‌های نقد، سوخت و مدت دوام را به‌صورت لحظه‌ای ببینید.',
+    title: 'پیش‌بین — کوپایلوت هوشمند تصمیم‌سازی مالی برای SMEهای ایرانی',
+    description: 'داده مالی پراکنده را کنار هم بگذارید و پیش از سؤال، تصمیم را جلو بکشید.',
     type: 'website',
   },
 }
@@ -29,7 +29,7 @@ export default function RootLayout({
         <link href="https://fonts.cdnfonts.com/css/dana" rel="stylesheet" />
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){var t=localStorage.getItem('nexus-theme');var r=t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.add(r?'dark':'light');})();`,
+            __html: `(function(){var t=localStorage.getItem('pishbin-theme');var r=t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.add(r?'dark':'light');})();`,
           }}
         />
       </head>

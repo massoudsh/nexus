@@ -1,8 +1,8 @@
-# Nexus — Phased Development
+# Pishbin — Phased Development
 
 Development is organized in phases. Each phase is tracked via GitHub issues and milestones.
 
-**Issues:** [GitHub Issues](https://github.com/massoudsh/nexus/issues)
+**Issues:** [GitHub Issues](https://github.com/massoudsh/pishbin/issues)
 
 ## Phases overview
 

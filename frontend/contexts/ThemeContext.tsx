@@ -4,7 +4,7 @@ import React, { createContext, useCallback, useContext, useEffect, useState } fr
 
 export type Theme = 'light' | 'dark' | 'system'
 
-const STORAGE_KEY = 'nexus-theme'
+const STORAGE_KEY = 'pishbin-theme'
 
 interface ThemeContextValue {
   theme: Theme

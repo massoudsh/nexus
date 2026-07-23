@@ -16,10 +16,10 @@ def send_password_reset_email(to_email: str, reset_link: str) -> bool:
     Send password reset email. Returns True if sent (or skipped in dev), False on SMTP error.
     When EMAIL_ENABLED is False, only logs the link and returns True.
     """
-    subject = "Nexus — Reset your password"
+    subject = "Pishbin — Reset your password"
     body = f"""Hello,
 
-You requested a password reset for your Nexus account.
+You requested a password reset for your Pishbin account.
 
 Click the link below to set a new password (valid for 1 hour):
 
@@ -27,7 +27,7 @@ Click the link below to set a new password (valid for 1 hour):
 
 If you didn't request this, you can ignore this email.
 
-— Nexus
+— Pishbin
 """
     if not getattr(settings, "EMAIL_ENABLED", False) or not settings.SMTP_HOST:
         logger.info("Email not configured; reset link for %s: %s", to_email, reset_link)
@@ -35,7 +35,7 @@ If you didn't request this, you can ignore this email.
     try:
         msg = MIMEMultipart("alternative")
         msg["Subject"] = subject
-        msg["From"] = settings.SMTP_FROM or settings.SMTP_USER or "noreply@nexus"
+        msg["From"] = settings.SMTP_FROM or settings.SMTP_USER or "noreply@pishbin"
         msg["To"] = to_email
         msg.attach(MIMEText(body, "plain"))
         with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:

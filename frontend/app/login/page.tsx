@@ -46,12 +46,12 @@ export default function LoginPage() {
         <div className="flex flex-col items-center gap-3">
           <Link href="/" className="flex items-center gap-2.5">
             <div className="h-11 w-11 rounded-xl bg-primary-500 text-white flex items-center justify-center font-bold text-sm shadow-sm">
-              NX
+              PB
             </div>
-            <span className="font-semibold text-gray-900 dark:text-white">نکسوس</span>
+            <span className="font-semibold text-gray-900 dark:text-white">پیش‌بین</span>
           </Link>
           <h2 className="text-center text-2xl font-bold text-gray-900 dark:text-white">
-            {fa.auth.signInToNexus}
+            {fa.auth.signInToPishbin}
           </h2>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>

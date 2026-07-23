@@ -24,7 +24,7 @@ async function main() {
 
   const user1 = await prisma.user.create({
     data: {
-      email: 'mock.parent@nexus.demo',
+      email: 'mock.parent@pishbin.demo',
       username: 'mock_parent',
       hashed_password: '$2b$10$mock.hashed.password.placeholder',
       full_name: 'والد نمونه',
@@ -35,7 +35,7 @@ async function main() {
 
   const user2 = await prisma.user.create({
     data: {
-      email: 'demo.user@nexus.demo',
+      email: 'demo.user@pishbin.demo',
       username: 'demo_user',
       hashed_password: '$2b$10$mock.hashed.password.placeholder',
       full_name: 'کاربر دمو',

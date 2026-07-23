@@ -1,7 +1,7 @@
 {
-  "name": "نکسوس",
-  "short_name": "Nexus",
-  "description": "هوش مالی لحظه‌ای برای اپراتورهای استارتاپ",
+  "name": "پیش‌بین",
+  "short_name": "پیش‌بین",
+  "description": "کوپایلوت هوشمند تصمیم‌سازی مالی برای کسب‌وکارهای کوچک و متوسط ایرانی",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f0f14",

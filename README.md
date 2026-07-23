@@ -1,6 +1,9 @@
-# Nexus
+# Pishbin (پیش‌بین)
 
-A full-stack personal finance application (Nexus) built with FastAPI backend and Next.js frontend.
+**کوپایلوت هوشمند تصمیم‌سازی مالی برای کسب‌وکارهای کوچک و متوسط ایرانی**
+**AI Financial Decision Copilot for Iranian SMEs**
+
+Pishbin brings together scattered financial data — invoices, checks, customer payment behavior — and shows the effect of today's decision on the next 30 days of cash flow, so the owner-operator of an Iranian SME doesn't have to be their own lonely CFO. Built with a FastAPI backend and Next.js frontend.
 
 ## Features
 
@@ -120,7 +123,7 @@ For **production deployment** (env vars, CORS, migrations, health check, Docker 
 ## Project Structure
 
 ```
-nexus/  # rename repo/folder from personal-finance-app to nexus if desired
+pishbin/
 ├── backend/
 │   ├── app/
 │   │   ├── api/v1/        # API endpoints
@@ -184,7 +187,7 @@ nexus/  # rename repo/folder from personal-finance-app to nexus if desired
 
 ## Development
 
-Phased development is tracked in [docs/PHASES.md](docs/PHASES.md) and via [GitHub issues](https://github.com/massoudsh/nexus/issues). User journeys (swimlane-style flows for transactions, accounts, budgets, goals, auth) are in [docs/USER_FLOWS.md](docs/USER_FLOWS.md).
+Phased development is tracked in [docs/PHASES.md](docs/PHASES.md) and via [GitHub issues](https://github.com/massoudsh/pishbin/issues). User journeys (swimlane-style flows for transactions, accounts, budgets, goals, auth) are in [docs/USER_FLOWS.md](docs/USER_FLOWS.md).
 
 ### Running Tests
 ```bash

@@ -57,7 +57,7 @@ async def request_payment(
     payload = {
         "MerchantID": settings.ZARINPAL_MERCHANT_ID,
         "Amount": amount_rials,
-        "Description": description[:255] if description else "Nexus payment",
+        "Description": description[:255] if description else "Pishbin payment",
         "CallbackURL": callback_url,
     }
     if email:

@@ -1,6 +1,6 @@
-# Nexus — User flows (swimlane style)
+# Pishbin — User flows (swimlane style)
 
-This document describes key user journeys in Nexus using a **stage-based, swimlane** flow (User vs System), similar to a ride-sharing request flow. Use these for UX consistency, state design, and implementation reference.
+This document describes key user journeys in Pishbin using a **stage-based, swimlane** flow (User vs System), similar to a ride-sharing request flow. Use these for UX consistency, state design, and implementation reference.
 
 ---
 

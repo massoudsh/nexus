@@ -1,18 +1,18 @@
-# Prisma + PostgreSQL (Nexus Frontend)
+# Prisma + PostgreSQL (Pishbin Frontend)
 
-Prisma is integrated in the **frontend** (Next.js) for server-side access to a PostgreSQL database with **mock/seed data** and reusable logic. Use a **separate database** (e.g. `nexus_prisma`) so it does not conflict with the FastAPI + SQLAlchemy backend.
+Prisma is integrated in the **frontend** (Next.js) for server-side access to a PostgreSQL database with **mock/seed data** and reusable logic. Use a **separate database** (e.g. `pishbin_prisma`) so it does not conflict with the FastAPI + SQLAlchemy backend.
 
 ## Setup
 
 1. **Create a PostgreSQL database** for Prisma (e.g. same server, different DB name):
    ```bash
-   createdb nexus_prisma
+   createdb pishbin_prisma
    ```
 
 2. **Environment**  
    In `frontend/.env.local` (or `.env`), set:
    ```env
-   PRISMA_DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/nexus_prisma?schema=public"
+   PRISMA_DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/pishbin_prisma?schema=public"
    ```
    Copy from `frontend/.env.example` if needed.
 

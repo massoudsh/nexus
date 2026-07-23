@@ -14,11 +14,11 @@ def client():
 
 
 def test_root(client: TestClient):
-    """Root returns Nexus API info."""
+    """Root returns Pishbin API info."""
     response = client.get("/")
     assert response.status_code == 200
     data = response.json()
-    assert data.get("message") == "Nexus API"
+    assert data.get("message") == "Pishbin API"
     assert "version" in data
     assert data.get("docs") == "/docs"
 

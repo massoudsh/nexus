@@ -104,7 +104,7 @@ def on_startup() -> None:
 async def root():
     """Root endpoint."""
     return {
-        "message": "Nexus API",
+        "message": "Pishbin API",
         "version": settings.APP_VERSION,
         "docs": "/docs"
     }

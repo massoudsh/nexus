@@ -220,7 +220,7 @@ async def twofa_setup(current_user: UserModel = Depends(get_current_user)):
     """Generate a new TOTP secret and provisioning URI for QR. Does not enable 2FA until /2fa/enable."""
     secret = pyotp.random_base32()
     totp = pyotp.TOTP(secret)
-    app_name = getattr(settings, "APP_NAME", "Nexus")
+    app_name = getattr(settings, "APP_NAME", "Pishbin")
     uri = totp.provisioning_uri(name=current_user.email or current_user.username, issuer_name=app_name)
     return {"secret": secret, "provisioning_uri": uri}
 

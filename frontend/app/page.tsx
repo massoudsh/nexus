@@ -11,9 +11,9 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between h-16 items-center">
           <div className="flex items-center gap-2">
             <div className="h-9 w-9 rounded-full bg-emerald-400 flex items-center justify-center font-bold text-sm text-[#0f0f14]">
-              NX
+              PB
             </div>
-            <span className="font-semibold text-white">نکسوس</span>
+            <span className="font-semibold text-white">پیش‌بین</span>
           </div>
           <div className="flex items-center gap-3">
             <Link href="/login" className="text-sm font-medium text-gray-400 hover:text-white transition">
@@ -86,7 +86,7 @@ export default function Home() {
                   {/* Glowing base platform */}
                   <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-48 h-16 rounded-lg bg-gray-800/90 border border-emerald-500/30 shadow-[0_0_40px_rgba(34,197,94,0.15)]" />
                   <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full bg-emerald-400/20 border border-emerald-400/50 flex items-center justify-center text-emerald-400 font-bold text-xs">
-                    NX
+                    PB
                   </div>
                   {/* Vertical light lines from platform */}
                   <div className="absolute bottom-16 left-1/2 -translate-x-px w-px h-24 bg-gradient-to-t from-emerald-400/40 to-transparent" />

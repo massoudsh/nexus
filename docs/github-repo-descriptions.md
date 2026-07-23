@@ -4,15 +4,15 @@ Short descriptions for each repo’s **About → Description** on GitHub. Copy t
 
 ---
 
-## Nexus (this repo)
+## Pishbin (this repo)
 
-**Description:**  
-Personal finance, simplified — accounts, transactions, budgets, goals, and Junior Smart Savings for teaching kids healthy money habits.
+**Description:**
+AI Financial Decision Copilot for Iranian SMEs — brings together invoices, checks, and customer payment behavior, and shows the effect of today's decision on the next 30 days of cash flow.
 
-**Short (if character limit):**  
-Personal finance app: accounts, budgets, goals & parent-controlled Junior Smart Savings.
+**Short (if character limit):**
+AI financial decision copilot for Iranian SMEs — cash flow, invoices, checks, in one view.
 
-**Topics (suggested):** `personal-finance` `nextjs` `fastapi` `typescript` `tailwind`
+**Topics (suggested):** `fintech` `sme` `cash-flow` `ai` `nextjs` `fastapi` `typescript` `tailwind`
 
 ---
 

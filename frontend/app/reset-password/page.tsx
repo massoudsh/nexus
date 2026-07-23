@@ -49,9 +49,9 @@ function ResetPasswordForm() {
           <div className="flex flex-col items-center gap-3">
             <Link href="/" className="flex items-center gap-2">
               <div className="h-10 w-10 rounded-lg bg-primary-600 text-white flex items-center justify-center font-bold text-sm">
-                NX
+                PB
               </div>
-              <span className="font-semibold text-gray-900 dark:text-white">Nexus</span>
+              <span className="font-semibold text-gray-900 dark:text-white">Pishbin</span>
             </Link>
             <h2 className="text-center text-xl font-bold text-gray-900 dark:text-white">
               Password reset
@@ -74,9 +74,9 @@ function ResetPasswordForm() {
         <div className="flex flex-col items-center gap-3">
           <Link href="/" className="flex items-center gap-2">
             <div className="h-10 w-10 rounded-lg bg-primary-600 text-white flex items-center justify-center font-bold text-sm">
-              NX
+              PB
             </div>
-            <span className="font-semibold text-gray-900 dark:text-white">Nexus</span>
+            <span className="font-semibold text-gray-900 dark:text-white">Pishbin</span>
           </Link>
           <h2 className="text-center text-2xl font-bold text-gray-900 dark:text-white">
             Set new password

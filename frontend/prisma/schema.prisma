@@ -1,5 +1,5 @@
-// Nexus – Prisma schema for PostgreSQL (mock/seed and server-side logic).
-// Use a separate DB (e.g. nexus_prisma) to avoid clashing with FastAPI backend.
+// Pishbin – Prisma schema for PostgreSQL (mock/seed and server-side logic).
+// Use a separate DB (e.g. pishbin_prisma) to avoid clashing with FastAPI backend.
 
 generator client {
   provider      = "prisma-client-js"

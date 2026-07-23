@@ -83,9 +83,9 @@ export default function Navbar() {
           <div className="flex items-center gap-6">
             <Link href="/dashboard" className="flex items-center gap-2.5">
               <div className="h-9 w-9 rounded-xl bg-primary-500 text-white flex items-center justify-center font-bold text-sm shadow-sm">
-                NX
+                PB
               </div>
-              <div className="font-semibold text-gray-900 dark:text-white">نکسوس</div>
+              <div className="font-semibold text-gray-900 dark:text-white">پیش‌بین</div>
               {!isAuthed && (
                 <span className="mr-1 text-xs font-medium bg-yellow-50 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 border border-yellow-200 dark:border-yellow-700 px-2 py-0.5 rounded-full hidden sm:inline">
                   {fa.common.guest}
